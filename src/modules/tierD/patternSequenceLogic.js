@@ -1,5 +1,5 @@
 export const MAX_LEVEL = 10
-export const SHAPES = ['🔺', '🔵', '🟩', '⭐', '🟣', '🟥', '🟧', '💎', '🔶', '🟢']
+export const SHAPES = ['🔺', '🔵', '🟩', '⭐', '🟣', '🟥', '🟧', '💎', '🔶', '🟢', '🔷', '⚫', '⚪']
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min

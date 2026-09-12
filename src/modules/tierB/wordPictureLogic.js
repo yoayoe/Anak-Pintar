@@ -15,6 +15,16 @@ export const EASY_WORDS = [
   { emoji: '👟', word: 'Shoe' },
   { emoji: '🐟', word: 'Fish' },
   { emoji: '🐦', word: 'Bird' },
+  { emoji: '🥤', word: 'Cup' },
+  { emoji: '🪑', word: 'Chair' },
+  { emoji: '🚪', word: 'Door' },
+  { emoji: '🔑', word: 'Key' },
+  { emoji: '⏰', word: 'Clock' },
+  { emoji: '👜', word: 'Bag' },
+  { emoji: '🥄', word: 'Spoon' },
+  { emoji: '☁️', word: 'Cloud' },
+  { emoji: '🌳', word: 'Tree' },
+  { emoji: '🚗', word: 'Car' },
 ]
 
 export const HARD_WORDS = [
@@ -32,6 +42,16 @@ export const HARD_WORDS = [
   { emoji: '🌋', word: 'Volcano' },
   { emoji: '🐧', word: 'Penguin' },
   { emoji: '🐙', word: 'Octopus' },
+  { emoji: '🎒', word: 'Backpack' },
+  { emoji: '🛹', word: 'Skateboard' },
+  { emoji: '🚁', word: 'Helicopter' },
+  { emoji: '🏆', word: 'Trophy' },
+  { emoji: '🧭', word: 'Compass' },
+  { emoji: '⚓', word: 'Anchor' },
+  { emoji: '🌵', word: 'Cactus' },
+  { emoji: '⛄', word: 'Snowman' },
+  { emoji: '🚒', word: 'Firetruck' },
+  { emoji: '🚀', word: 'Spaceship' },
 ]
 
 function shuffled(arr) {

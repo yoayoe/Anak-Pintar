@@ -1,16 +1,18 @@
 // Bank kategori besar dipakai bersama oleh game "Cari yang Beda" Tier B dan Tier C.
-// Tiap kategori punya 8 anggota supaya kombinasi soal (3 anggota acak + 1 pengecoh) sangat bervariasi.
+// Tiap kategori punya 10 anggota supaya kombinasi soal (3 anggota acak + 1 pengecoh) sangat bervariasi.
 export const CATEGORIES = {
-  fruits: ['🍎', '🍌', '🍊', '🍇', '🍓', '🍍', '🥭', '🍑'],
-  vegetables: ['🥕', '🥦', '🌽', '🥔', '🍅', '🥒', '🧅', '🍆'],
-  animals: ['🐶', '🐱', '🐮', '🐷', '🐴', '🐑', '🐘', '🦁'],
-  seaAnimals: ['🐟', '🐬', '🐳', '🐙', '🦀', '🐠', '🦐', '🐢'],
-  vehicles: ['🚗', '🚌', '🚲', '✈️', '🚂', '🚢', '🚁', '🏍️'],
-  shapes: ['🔺', '🔵', '🟩', '⭐', '🟣', '🔶', '💎', '🟥'],
-  instruments: ['🎸', '🥁', '🎺', '🎻', '🎹', '🪕', '🎷', '🪘'],
-  clothing: ['👕', '👖', '🧦', '👗', '🧥', '👒', '👟', '🧤'],
-  sky: ['☀️', '🌙', '☁️', '🌈', '⚡', '🌧️', '❄️', '🌫️'],
-  bugs: ['🐝', '🦋', '🐞', '🐛', '🦗', '🐜', '🕷️', '🐌'],
+  fruits: ['🍎', '🍌', '🍊', '🍇', '🍓', '🍍', '🥭', '🍑', '🍒', '🥝'],
+  vegetables: ['🥕', '🥦', '🌽', '🥔', '🍅', '🥒', '🧅', '🍆', '🥬', '🫑'],
+  animals: ['🐶', '🐱', '🐮', '🐷', '🐴', '🐑', '🐘', '🦁', '🐹', '🐭'],
+  seaAnimals: ['🐟', '🐬', '🐳', '🐙', '🦀', '🐠', '🦐', '🐢', '🦑', '🐡'],
+  vehicles: ['🚗', '🚌', '🚲', '✈️', '🚂', '🚢', '🚁', '🏍️', '🚕', '🛵'],
+  shapes: ['🔺', '🔵', '🟩', '⭐', '🟣', '🔶', '💎', '🟥', '🔷', '🟡'],
+  instruments: ['🎸', '🥁', '🎺', '🎻', '🎹', '🪕', '🎷', '🪘', '🪗', '📯'],
+  clothing: ['👕', '👖', '🧦', '👗', '🧥', '👒', '👟', '🧤', '🧣', '👞'],
+  sky: ['☀️', '🌙', '☁️', '🌈', '⚡', '🌧️', '❄️', '🌫️', '🌠', '🌪️'],
+  bugs: ['🐝', '🦋', '🐞', '🐛', '🦗', '🐜', '🕷️', '🐌', '🪲', '🦟'],
+  desserts: ['🍰', '🍩', '🍪', '🍦', '🎂', '🍫', '🍭', '🍿', '🧁', '🍬'],
+  sports: ['⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏓', '🥊', '🏸', '⛳'],
 }
 
 // Kategori yang jelas berbeda - mudah dibedakan.
@@ -21,6 +23,8 @@ export const EASY_PAIRINGS = [
   ['clothing', 'seaAnimals'],
   ['bugs', 'vehicles'],
   ['sky', 'shapes'],
+  ['desserts', 'vehicles'],
+  ['sports', 'sky'],
 ]
 
 // Kategori masih beda domain tapi lebih dekat - butuh perhatian lebih.
@@ -31,6 +35,8 @@ export const MEDIUM_PAIRINGS = [
   ['clothing', 'instruments'],
   ['bugs', 'seaAnimals'],
   ['shapes', 'sky'],
+  ['desserts', 'fruits'],
+  ['sports', 'instruments'],
 ]
 
 // Kategori paling dekat/subtil - paling menantang.
@@ -39,6 +45,7 @@ export const HARD_PAIRINGS = [
   ['vegetables', 'fruits'],
   ['seaAnimals', 'bugs'],
   ['vehicles', 'sky'],
+  ['desserts', 'vegetables'],
 ]
 
 function shuffled(arr) {

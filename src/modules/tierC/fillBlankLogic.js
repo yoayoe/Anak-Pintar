@@ -13,6 +13,12 @@ export const EASY_SENTENCES = [
   { sentence: 'My sister ___ a doctor.', answer: 'is', distractors: ['are', 'am', 'be'] },
   { sentence: 'The cats ___ sleeping now.', answer: 'are', distractors: ['is', 'am', 'was'] },
   { sentence: 'My mother ___ to work by car.', answer: 'goes', distractors: ['go', 'going', 'went'] },
+  { sentence: 'He ___ a red car.', answer: 'has', distractors: ['have', 'having', 'had'] },
+  { sentence: 'The birds ___ singing in the tree.', answer: 'are', distractors: ['is', 'am', 'was'] },
+  { sentence: 'I ___ my homework every day.', answer: 'do', distractors: ['does', 'doing', 'did'] },
+  { sentence: 'This is ___ umbrella.', answer: 'an', distractors: ['a', 'the', 'some'] },
+  { sentence: 'The children ___ playing outside.', answer: 'are', distractors: ['is', 'am', 'was'] },
+  { sentence: 'My brother ___ tall.', answer: 'is', distractors: ['are', 'am', 'be'] },
 ]
 
 export const HARD_SENTENCES = [
@@ -28,6 +34,12 @@ export const HARD_SENTENCES = [
   { sentence: 'My dad ___ dinner every night.', answer: 'cooks', distractors: ['cook', 'cooking', 'cooked'] },
   { sentence: 'I ___ my homework before dinner.', answer: 'did', distractors: ['do', 'does', 'doing'] },
   { sentence: 'The baby ___ all afternoon.', answer: 'slept', distractors: ['sleep', 'sleeps', 'sleeping'] },
+  { sentence: 'This book is ___ than that one.', answer: 'thinner', distractors: ['thin', 'thinnest', 'more thin'] },
+  { sentence: 'They ___ to the zoo tomorrow.', answer: 'will go', distractors: ['go', 'goes', 'going'] },
+  { sentence: 'This is the ___ book I have read.', answer: 'best', distractors: ['better', 'good', 'well'] },
+  { sentence: 'My grandmother ___ stories every night.', answer: 'tells', distractors: ['tell', 'telling', 'told'] },
+  { sentence: 'The sun ___ in the east.', answer: 'rises', distractors: ['rise', 'rising', 'rose'] },
+  { sentence: "We ___ a big cake for her birthday.", answer: 'made', distractors: ['make', 'makes', 'making'] },
 ]
 
 function randInt(min, max) {

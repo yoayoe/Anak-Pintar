@@ -21,6 +21,18 @@ const ANIMALS = [
   { emoji: '🐒', word: 'Monkey', say: 'Ooh ooh ah ah! Monkey!' },
   { emoji: '🐢', word: 'Turtle', say: 'Slow and steady! Turtle!' },
   { emoji: '🐰', word: 'Rabbit', say: 'Hop hop! Rabbit!' },
+  { emoji: '🦓', word: 'Zebra', say: 'Neigh! Zebra!' },
+  { emoji: '🦒', word: 'Giraffe', say: 'Munch munch! Giraffe!' },
+  { emoji: '🦘', word: 'Kangaroo', say: 'Boing boing! Kangaroo!' },
+  { emoji: '🐼', word: 'Panda', say: 'Munch munch! Panda!' },
+  { emoji: '🐺', word: 'Wolf', say: 'Howl! Wolf!' },
+  { emoji: '🦊', word: 'Fox', say: 'Yip yip! Fox!' },
+  { emoji: '🦌', word: 'Deer', say: 'Snort! Deer!' },
+  { emoji: '🐫', word: 'Camel', say: 'Grunt! Camel!' },
+  { emoji: '🦛', word: 'Hippo', say: 'Grunt! Hippo!' },
+  { emoji: '🦏', word: 'Rhino', say: 'Snort! Rhino!' },
+  { emoji: '🐿️', word: 'Squirrel', say: 'Chirr chirr! Squirrel!' },
+  { emoji: '🦚', word: 'Peacock', say: 'Squawk! Peacock!' },
 ]
 
 function pickRandomNine() {

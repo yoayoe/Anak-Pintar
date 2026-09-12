@@ -13,6 +13,14 @@ export const COLORS = [
   { name: 'White', hex: '#f5f5f5' },
   { name: 'Gray', hex: '#9e9e9e' },
   { name: 'Cyan', hex: '#18ffff' },
+  { name: 'Turquoise', hex: '#1abc9c' },
+  { name: 'Lime', hex: '#c6ff00' },
+  { name: 'Navy', hex: '#283593' },
+  { name: 'Gold', hex: '#ffd700' },
+  { name: 'Silver', hex: '#bdbdbd' },
+  { name: 'Maroon', hex: '#8d2f2f' },
+  { name: 'Magenta', hex: '#ff00ff' },
+  { name: 'Beige', hex: '#e8d9b5' },
 ]
 
 function shuffled(arr) {

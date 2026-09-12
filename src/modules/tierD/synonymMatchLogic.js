@@ -15,6 +15,12 @@ export const EASY_PAIRS = [
   { word: 'Strong', synonym: 'Powerful', distractors: ['Weak', 'Fragile', 'Tiny'] },
   { word: 'Sad', synonym: 'Unhappy', distractors: ['Glad', 'Joyful', 'Calm'] },
   { word: 'Clean', synonym: 'Tidy', distractors: ['Dirty', 'Messy', 'Wet'] },
+  { word: 'Angry', synonym: 'Mad', distractors: ['Calm', 'Happy', 'Gentle'] },
+  { word: 'Easy', synonym: 'Simple', distractors: ['Hard', 'Complex', 'Tricky'] },
+  { word: 'Tired', synonym: 'Sleepy', distractors: ['Awake', 'Active', 'Alert'] },
+  { word: 'Wet', synonym: 'Damp', distractors: ['Dry', 'Hot', 'Sunny'] },
+  { word: 'Thin', synonym: 'Slim', distractors: ['Fat', 'Wide', 'Thick'] },
+  { word: 'Rich', synonym: 'Wealthy', distractors: ['Poor', 'Broke', 'Needy'] },
 ]
 
 export const HARD_PAIRS = [
@@ -32,6 +38,12 @@ export const HARD_PAIRS = [
   { word: 'Peculiar', synonym: 'Strange', distractors: ['Normal', 'Common', 'Usual'] },
   { word: 'Generous', synonym: 'Giving', distractors: ['Selfish', 'Greedy', 'Stingy'] },
   { word: 'Terrified', synonym: 'Scared', distractors: ['Brave', 'Confident', 'Bold'] },
+  { word: 'Cautious', synonym: 'Careful', distractors: ['Reckless', 'Careless', 'Bold'] },
+  { word: 'Delighted', synonym: 'Thrilled', distractors: ['Upset', 'Bored', 'Annoyed'] },
+  { word: 'Vanish', synonym: 'Disappear', distractors: ['Appear', 'Remain', 'Arrive'] },
+  { word: 'Fragile', synonym: 'Delicate', distractors: ['Sturdy', 'Tough', 'Strong'] },
+  { word: 'Immense', synonym: 'Vast', distractors: ['Tiny', 'Narrow', 'Small'] },
+  { word: 'Reluctant', synonym: 'Unwilling', distractors: ['Eager', 'Willing', 'Keen'] },
 ]
 
 function randInt(min, max) {
