@@ -716,15 +716,17 @@ button {
 }
 .placement-progress {
   position: absolute;
-  top: 2vh;
-  right: 2vh;
+  top: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 92vw;
   background: #fff;
-  padding: 1vh 2.5vw;
-  border-radius: 999px;
-  font-size: 1.8vh;
+  padding: 1vh 3vw;
+  border-radius: 16px;
+  font-size: 1.7vh;
   color: #555;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
-  text-align: right;
+  text-align: center;
   z-index: 40;
 }
 .placement-results {
