@@ -610,6 +610,58 @@ button {
   padding: 0.6vh 1.2vh;
 }
 
+.sentence-box {
+  font-size: 3.2vh;
+  max-width: 85vw;
+  line-height: 1.4;
+}
+
+.emoji-prompt {
+  font-size: 12vh;
+  background: #fff;
+  padding: 1vh 4vw;
+  border-radius: 20px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* ---------- odd one out ---------- */
+.oddoneout-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4vh;
+  background: linear-gradient(180deg, #fef6e4 0%, #e0f2f1 100%);
+}
+.oddoneout-prompt {
+  font-size: 3.2vh;
+  font-weight: bold;
+  color: #555;
+}
+.oddoneout-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 3vh;
+}
+.oddoneout-btn {
+  width: 18vh;
+  height: 18vh;
+  font-size: 8vh;
+  border: none;
+  border-radius: 24px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s;
+}
+.oddoneout-btn:active {
+  transform: scale(0.92);
+}
+.oddoneout-btn.wrong {
+  animation: shake 0.3s;
+}
+
 .set-report {
   position: absolute;
   left: 50%;

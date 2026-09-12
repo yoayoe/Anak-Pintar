@@ -3,9 +3,32 @@ import { tierForProfile } from '../data/ageTier'
 import { stageLabel } from '../data/levelStage'
 import { applyPlacementLevels } from '../data/storage'
 import { makeRound as colorMakeRound, MAX_LEVEL as COLOR_MAX_LEVEL } from '../modules/tierA/colorMatchLogic'
+import { makeQuestion as additionMakeQuestion, MAX_LEVEL as ADDITION_MAX_LEVEL } from '../modules/tierB/additionLogic'
+import { makeRound as wordPictureMakeRound, MAX_LEVEL as WORD_PICTURE_MAX_LEVEL } from '../modules/tierB/wordPictureLogic'
+import { makeQuestion as addSubtractMakeQuestion, MAX_LEVEL as ADD_SUBTRACT_MAX_LEVEL } from '../modules/tierC/addSubtractLogic'
+import { makeRound as fillBlankMakeRound, MAX_LEVEL as FILL_BLANK_MAX_LEVEL } from '../modules/tierC/fillBlankLogic'
+import {
+  makeRound as oddOneOutMakeRound,
+  EASY_PAIRINGS,
+  MEDIUM_PAIRINGS,
+  HARD_PAIRINGS,
+} from '../modules/shared/oddOneOutLogic'
 import { makeQuestion as multMakeQuestion, MAX_LEVEL as MULT_MAX_LEVEL } from '../modules/tierD/multiplicationLogic'
 import { makeRound as patternMakeRound, MAX_LEVEL as PATTERN_MAX_LEVEL } from '../modules/tierD/patternSequenceLogic'
 import { makeRound as synonymMakeRound, MAX_LEVEL as SYNONYM_MAX_LEVEL } from '../modules/tierD/synonymMatchLogic'
+
+const ODD_ONE_OUT_B_MAX_LEVEL = 8
+const ODD_ONE_OUT_C_MAX_LEVEL = 10
+
+function oddOneOutPoolB(level) {
+  return level >= 5 ? MEDIUM_PAIRINGS : EASY_PAIRINGS
+}
+
+function oddOneOutPoolC(level) {
+  if (level >= 7) return HARD_PAIRINGS
+  if (level >= 4) return MEDIUM_PAIRINGS
+  return EASY_PAIRINGS
+}
 
 const ROUNDS_PER_SUBJECT = 5
 
@@ -21,8 +44,67 @@ const PLACEMENT_BY_TIER = {
       isCorrect: (q, key) => key === q.target.name,
     },
   ],
-  B: [],
-  C: [],
+  B: [
+    {
+      gameId: 'tierB-addition',
+      title: 'Matematika (Penjumlahan)',
+      minLevel: 1,
+      maxLevel: ADDITION_MAX_LEVEL,
+      kind: 'text',
+      generate: additionMakeQuestion,
+      getPrompt: (q) => q.prompt,
+      isCorrect: (q, key) => key === q.target,
+    },
+    {
+      gameId: 'tierB-odd-one-out',
+      title: 'Logika (Cari yang Beda)',
+      minLevel: 1,
+      maxLevel: ODD_ONE_OUT_B_MAX_LEVEL,
+      kind: 'oddoneout',
+      generate: (level) => oddOneOutMakeRound(oddOneOutPoolB(level)),
+      isCorrect: (q, key) => key === q.oddItem,
+    },
+    {
+      gameId: 'tierB-word-picture',
+      title: 'Bahasa Inggris (Kata & Gambar)',
+      minLevel: 1,
+      maxLevel: WORD_PICTURE_MAX_LEVEL,
+      kind: 'picture-word',
+      generate: wordPictureMakeRound,
+      isCorrect: (q, key) => key === q.answer,
+    },
+  ],
+  C: [
+    {
+      gameId: 'tierC-add-subtract',
+      title: 'Matematika (Tambah & Kurang)',
+      minLevel: 1,
+      maxLevel: ADD_SUBTRACT_MAX_LEVEL,
+      kind: 'text',
+      generate: addSubtractMakeQuestion,
+      getPrompt: (q) => q.prompt,
+      isCorrect: (q, key) => key === q.target,
+    },
+    {
+      gameId: 'tierC-odd-one-out',
+      title: 'Logika (Cari yang Beda)',
+      minLevel: 1,
+      maxLevel: ODD_ONE_OUT_C_MAX_LEVEL,
+      kind: 'oddoneout',
+      generate: (level) => oddOneOutMakeRound(oddOneOutPoolC(level)),
+      isCorrect: (q, key) => key === q.oddItem,
+    },
+    {
+      gameId: 'tierC-fill-blank',
+      title: 'Bahasa Inggris (Lengkapi Kalimat)',
+      minLevel: 1,
+      maxLevel: FILL_BLANK_MAX_LEVEL,
+      kind: 'text',
+      generate: fillBlankMakeRound,
+      getPrompt: (q) => q.sentence,
+      isCorrect: (q, key) => key === q.answer,
+    },
+  ],
   D: [
     {
       gameId: 'tierD-multiplication',
@@ -199,6 +281,32 @@ export default function PlacementTest({ profile, onFinish, onCancel }) {
           <div className="options-grid">
             {options.map((o, i) => (
               <button key={i} className="option-btn" onClick={() => answer(o)}>
+                {o}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {subject.kind === 'oddoneout' && (
+        <>
+          <div className="oddoneout-prompt">Cari yang beda!</div>
+          <div className="oddoneout-grid">
+            {question.items.map((item, i) => (
+              <button key={i} className="oddoneout-btn" onClick={() => answer(item)}>
+                {item}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {subject.kind === 'picture-word' && (
+        <>
+          <div className="emoji-prompt">{question.emoji}</div>
+          <div className="options-grid">
+            {options.map((o) => (
+              <button key={o} className="option-btn" onClick={() => answer(o)}>
                 {o}
               </button>
             ))}

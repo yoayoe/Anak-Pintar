@@ -49,10 +49,20 @@ src/
     PlacementTest, SetReportBanner          # tes penempatan & laporan tiap set soal
   modules/
     registry.js            # daftar semua game + tier + subjek
+    shared/
+      oddOneOutLogic.js       # bank kategori "Cari yang Beda", dipakai bareng Tier B & C
     tierA/                  # game untuk usia pra-sekolah (3-4 th)
       BalloonPop.jsx          # free-play, tanpa grading
       AnimalSounds.jsx         # free-play, tanpa grading
       ColorMatch.jsx + colorMatchLogic.js   # grading akurasi (tanpa syarat kecepatan)
+    tierB/                  # game untuk usia TK - Kelas 1 (5-6 th)
+      AdditionB.jsx + additionLogic.js
+      OddOneOut.jsx            # pakai shared/oddOneOutLogic.js (pool mudah/sedang)
+      WordPictureMatch.jsx + wordPictureLogic.js
+    tierC/                  # game untuk usia Kelas 2-3 (7-8 th)
+      AddSubtract.jsx + addSubtractLogic.js
+      OddOneOut.jsx            # pakai shared/oddOneOutLogic.js (pool sedang/sulit)
+      FillBlank.jsx + fillBlankLogic.js
     tierD/                  # game untuk usia 9-10+ th
       Multiplication.jsx + multiplicationLogic.js
       PatternSequence.jsx + patternSequenceLogic.js
@@ -81,7 +91,7 @@ Tier dihitung otomatis dari `birthYear` yang diisi orang tua (`src/data/ageTier.
 | C | 7-8 th | Kelas 2-3 |
 | D | 9-10+ th | Kelas 4-5+ |
 
-> Tier B dan C belum punya game (lihat [Keterbatasan & Roadmap](#keterbatasan--roadmap)) — anak di rentang umur itu akan melihat pesan "segera hadir" di menu.
+Semua tier (A, B, C, D) sudah punya 3 game (matematika, logika, Bahasa Inggris) — lihat [Materi Soal per Game](#materi-soal-per-game).
 
 ## Sistem Leveling & Grading (ala Kumon)
 
@@ -131,6 +141,12 @@ Ditampilkan di layar sebagai contoh: `Level 4 · Menengah`. Ini kosmetik saja (t
 | Game | `setSize` | `passAccuracy` | `targetTimeMs` | `maxLevel` | `setsPerLevel` |
 |---|---|---|---|---|---|
 | Color Match (Tier A) | 8 | 75% | ∞ (tanpa syarat kecepatan) | 4 | 3 |
+| Tambah Ceria (Tier B) | 10 | 80% | 15.000 ms | 8 | 3 |
+| Cari yang Beda (Tier B) | 8 | 75% | ∞ (tanpa syarat kecepatan) | 8 | 3 |
+| Kata & Gambar (Tier B) | 10 | 80% | 12.000 ms | 6 | 3 |
+| Tambah & Kurang (Tier C) | 10 | 80% | 15.000 ms | 10 | 3 |
+| Cari yang Beda (Tier C) | 10 | 80% | 12.000 ms | 10 | 3 |
+| Lengkapi Kalimat (Tier C) | 10 | 80% | 12.000 ms | 8 | 3 |
 | Perkalian Cepat (Tier D) | 10 | 80% | 12.000 ms | 10 | 3 |
 | Lanjutkan Pola (Tier D) | 10 | 80% | 15.000 ms | 10 | 3 |
 | Synonym Match (Tier D) | 10 | 80% | 10.000 ms | 6 | 3 |
@@ -153,6 +169,36 @@ Anak main Perkalian Cepat di Level 3:
 - Bank 12 warna Bahasa Inggris (Red, Yellow, Green, Blue, Purple, Orange, Pink, Brown, Black, White, Gray, Cyan).
 - Level mengatur **jumlah pilihan** yang ditampilkan, bukan jenis warnanya: `jumlah opsi = min(12, 2 + level)` → Level 1 = 3 opsi, Level 2 = 4 opsi, Level 3 = 5 opsi, Level 4 = 6 opsi. Makin tinggi level, makin banyak "pengganggu" yang harus dibedakan.
 - Setiap soal diucapkan dengan Text-to-Speech Bahasa Inggris ("Find the color Red") untuk melatih pengenalan kosakata warna.
+
+### Tambah Ceria (Tier B — Matematika, `additionLogic.js`)
+
+- Penjumlahan dua bilangan, `maxOperand = min(10, 1 + level)` → Level 1: angka 1-2 (jumlah maks 4), Level 8: angka 1-9 (jumlah bisa sampai 18) — sesuai kurikulum "penjumlahan sampai 20" TK-Kelas 1.
+- Mulai Level 5, 40% soal berubah jadi **cari suku yang hilang** (`a + ? = c`), sama pola variasinya dengan Perkalian Cepat di Tier D.
+
+### Cari yang Beda (Tier B & Tier C — Logika, `shared/oddOneOutLogic.js`)
+
+Game ini **dipakai bersama** oleh kedua tier (kode generatornya satu file), tapi progres levelnya terpisah per tier (`tierB-odd-one-out` vs `tierC-odd-one-out`) dan Tier C mengambil dari pool yang lebih menantang.
+
+- Bank 10 kategori × 8 anggota (fruits, vegetables, animals, seaAnimals, vehicles, shapes, instruments, clothing, sky, bugs) = 80 item emoji, sehingga kombinasi soal (pilih acak 3 anggota + 1 pengecoh dari kategori lain) sangat banyak.
+- 3 tingkat kedekatan kategori: **Easy** (kategori sangat berbeda, mis. buah vs kendaraan), **Medium** (masih beda domain tapi berdekatan, mis. hewan darat vs hewan laut), **Hard** (paling subtil, mis. hewan vs serangga).
+- Tier B (maxLevel 8) hanya memakai pool Easy (Level 1-4) dan Medium (Level 5+). Tier C (maxLevel 10) menambahkan pool Hard di Level 7+, dengan Medium di Level 4-6.
+- Tanpa syarat kecepatan di Tier B (`targetTimeMs: Infinity`) karena ini soal kategorisasi visual, bukan drill; Tier C memberi target waktu longgar (12 detik) karena anak kelas 2-3 sudah mulai dilatih pace.
+
+### Kata & Gambar (Tier B — Bahasa Inggris, `wordPictureLogic.js`)
+
+- Bank 14 kata mudah (Apple, Banana, Ball, Book, House, Sun, Moon, Star, Milk, Egg, Hat, Shoe, Fish, Bird) dan 14 kata sulit (Elephant, Umbrella, Butterfly, Mountain, Bicycle, Strawberry, Guitar, Rainbow, Dinosaur, Sandwich, Telescope, Volcano, Penguin, Octopus).
+- Level 1-3 dari bank mudah, Level 4-6 dari bank sulit. Soal menampilkan **gambar (emoji) besar**, anak memilih kata Bahasa Inggris yang cocok — melatih pengenalan kata tertulis (reading), berbeda dari Animal Sounds di Tier A yang cuma dengar+tap tanpa membaca.
+
+### Tambah & Kurang (Tier C — Matematika, `addSubtractLogic.js`)
+
+- Penjumlahan **dan** pengurangan dua digit, `maxOperand = min(50, 5 + level×5)` → Level 1: angka sampai 10, Level 10: angka sampai 55 (hasil bisa sampai ratusan) — meningkat dari Tier B yang cuma penjumlahan sampai 20.
+- Operasi (`+`/`-`) dipilih acak tiap soal; untuk pengurangan, bilangan otomatis ditukar kalau perlu supaya hasil tidak negatif.
+- Mulai Level 6, 40% soal berubah format jadi **cari suku yang hilang** (`a - ? = c`, dst.).
+
+### Lengkapi Kalimat (Tier C — Bahasa Inggris, `fillBlankLogic.js`)
+
+- Bank 12 kalimat rumpang level mudah (present tense, subject-verb agreement, artikel a/an — mis. "She ___ happy today." → *is*) dan 12 level sulit (past tense, comparative — mis. "She is ___ than her brother." → *taller*).
+- Level 1-4 dari bank mudah, Level 5-8 dari bank sulit. Saat jawaban benar, kalimat lengkap diucapkan (Text-to-Speech Bahasa Inggris) sebagai penguatan — melatih grammar dasar sekaligus listening.
 
 ### Perkalian Cepat (Tier D — Matematika, `multiplicationLogic.js`)
 
@@ -188,7 +234,7 @@ Sistem leveling di bab 5 butuh titik awal (`level: 1` secara default untuk profi
 
 ### Algoritma: pencarian biner (binary search)
 
-Untuk tiap subjek yang tersedia di tier anak (Tier D = Matematika, Logika, Bahasa Inggris; Tier A = Warna), dijalankan maksimal **5 soal** (`ROUNDS_PER_SUBJECT`) untuk menaksir level:
+Untuk tiap subjek yang tersedia di tier anak (Tier A = Warna; Tier B/C/D masing-masing = Matematika, Logika, Bahasa Inggris), dijalankan maksimal **5 soal** (`ROUNDS_PER_SUBJECT`) per subjek untuk menaksir level:
 
 1. Mulai dengan `low = 1`, `high = maxLevel` game tsb.
 2. Ambil `currentLevel = round((low + high) / 2)`, buat 1 soal di level itu (pakai generator soal **yang sama** dengan game aslinya — `makeQuestion`/`makeRound`).
@@ -238,7 +284,6 @@ Semua data lokal di device — tidak ada server/akun, sehingga tidak ada login, 
 
 ## Keterbatasan & Roadmap
 
-- **Tier B & C (5-8 tahun) belum ada game** — menu menampilkan "segera hadir" untuk profil di rentang umur itu. Struktur (`registry.js`, `useGameProgress`, `PlacementTest`) sudah siap menampung begitu game-nya dibuat, tinggal tambah entri baru + `placementConfig` di `PlacementTest.jsx`.
 - **Ikon PWA** (`pwa-192.png`, `pwa-512.png`) belum dibuat — install-to-homescreen akan pakai ikon default browser.
 - **Belum ada laporan mingguan untuk orang tua** (waktu main, topik yang dikuasai) — datanya sudah tersimpan (`dc:progress:*`, `dc:playtime:*`), tinggal dibuatkan tampilannya di layar Pengaturan.
 - **Placement test hanya sekali jalan per klik** — kalau ingin tes ulang (misalnya beberapa bulan kemudian anak makin jago), tinggal buka lagi tombolnya, tidak ada pembatasan berapa kali boleh dites.
