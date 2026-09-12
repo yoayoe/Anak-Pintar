@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState } from 'react'
-import { loadProfiles, saveProfiles } from '../data/storage'
+import { generateId, loadProfiles, saveProfiles } from '../data/storage'
 
 const ProfileContext = createContext(null)
 
@@ -8,7 +8,7 @@ export function ProfileProvider({ children }) {
   const [activeProfileId, setActiveProfileId] = useState(null)
 
   function addProfile(profile) {
-    const next = [...profiles, { id: crypto.randomUUID(), ...profile }]
+    const next = [...profiles, { id: generateId(), ...profile }]
     setProfiles(next)
     saveProfiles(next)
   }

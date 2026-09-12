@@ -1,6 +1,17 @@
 const PROFILES_KEY = 'dc:profiles'
 const PIN_KEY = 'dc:parentPin'
 
+// crypto.randomUUID only exists in secure contexts (https, or localhost) - it's
+// undefined when the app is opened over plain http via a LAN IP, which broke
+// "Simpan" on the add-profile form with a silent TypeError. Fall back to a
+// manual id there; it only needs to be unique on this one device.
+export function generateId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return `id-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
 export function loadProfiles() {
   try {
     return JSON.parse(localStorage.getItem(PROFILES_KEY)) || []
