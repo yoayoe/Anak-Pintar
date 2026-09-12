@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useProfiles } from '../context/ProfileContext'
-import { ageFromBirthYear, TIER_LABELS, tierForProfile } from '../data/ageTier'
+import { ageFromBirthYear, ageTierForProfile, TIER_LABELS, TIERS, tierForProfile } from '../data/ageTier'
 import { loadPlaytimeSeconds } from '../data/storage'
 
 const AVATARS = ['🐻', '🦊', '🐱', '🐶', '🐼', '🦁', '🐸', '🦄']
@@ -42,6 +42,11 @@ export default function Settings({ onBack }) {
                 <div className="settings-row-info">
                   <strong>{p.name}</strong>
                   <span>{ageFromBirthYear(p.birthYear)} tahun · {TIER_LABELS[tierForProfile(p)]} · {p.dailyLimitMinutes} menit/hari</span>
+                  {p.tierOverride && p.tierOverride !== ageTierForProfile(p) && (
+                    <span className="settings-row-sub">
+                      ⚠️ Tingkat diatur manual (bukan {TIER_LABELS[ageTierForProfile(p)]} sesuai umur)
+                    </span>
+                  )}
                   <span className="settings-row-sub">Main hari ini: {Math.round(loadPlaytimeSeconds(p.id) / 60)} menit</span>
                 </div>
                 <button className="btn-secondary" onClick={() => startEdit(p)}>Ubah</button>
@@ -81,6 +86,24 @@ export default function Settings({ onBack }) {
               value={form.birthYear}
               onChange={(e) => setForm({ ...form, birthYear: Number(e.target.value) })}
             />
+          </label>
+          <label>
+            Tingkat Kesulitan
+            <select
+              value={form.tierOverride || ''}
+              onChange={(e) => setForm({ ...form, tierOverride: e.target.value || null })}
+            >
+              <option value="">Otomatis (sesuai umur: {TIER_LABELS[ageTierForProfile(form)]})</option>
+              {TIERS.map((t) => (
+                <option key={t} value={t}>
+                  {TIER_LABELS[t]}
+                </option>
+              ))}
+            </select>
+            <span className="field-hint">
+              Ubah manual kalau anak perlu tingkat lebih mudah/sulit dari umurnya. Tes Penempatan juga bisa
+              menyarankan ini otomatis kalau anak kesulitan di semua soal.
+            </span>
           </label>
           <label>
             Batas Waktu Harian: {form.dailyLimitMinutes} menit

@@ -250,6 +250,15 @@ Dengan pencarian biner, 5 pertanyaan cukup untuk menyisir 10 level (`log2(10) �
 
 Setelah semua subjek selesai dites, muncul ringkasan (mis. "Matematika: Level 6 · Mahir"). Tombol **"Terapkan & Mulai Main"** memanggil `applyPlacementLevels()` (`src/data/storage.js`) yang menulis level rekomendasi ke `progress.games[gameId].level` dan me-reset semua penghitung set (`setAnswered`, `setsPassedAtLevel`, dst.) — bintang yang sudah terkumpul tidak ikut direset.
 
+### Turun Tingkat Kalau Belum Siap
+
+Tier (A/B/C/D) normalnya murni dari umur (`tierFromAge()`), tapi umur tidak selalu mencerminkan kesiapan anak. Kalau di hasil tes **semua subjek** berakhir di Level 1 (`subjects.every(s => results[s.gameId] <= s.minLevel)` — tanda anak kesulitan bahkan di soal termudah tingkat itu), muncul kotak saran: *"Sepertinya soal di tingkat ini masih agak sulit... mau coba tingkat di bawahnya?"* dengan tombol untuk pindah.
+
+- Klik tombol itu menyimpan `tierOverride` ke profil anak (`updateProfile(id, { tierOverride: lowerTier })`) — field ini **menang atas tier hasil hitungan umur** di `tierForProfile()` (`src/data/ageTier.js`).
+- `PlacementTest` diberi `key={tierForProfile(activeProfile)}` di `App.jsx`, sehingga begitu `tierOverride` berubah, komponennya **remount bersih** dan tes otomatis dimulai ulang dari awal untuk tingkat yang baru — tanpa kode reset manual.
+- Tier A adalah lantai paling bawah (tidak punya `PREV_TIER`), jadi kalau anak masih kesulitan juga di sana, tidak ada saran turun lagi.
+- `tierOverride` ini **tidak hilang sendiri** — supaya orang tua tetap pegang kendali, ada juga dropdown "Tingkat Kesulitan" di halaman Pengaturan (`Settings.jsx`) untuk mengatur manual (naik/turun) atau mengembalikannya ke "Otomatis (sesuai umur)" kapan saja, tanpa harus lewat tes lagi.
+
 ## Sistem Bintang & Reward
 
 Dua sumber bintang, tergantung jenis game:
@@ -275,7 +284,7 @@ Tidak ada leaderboard atau perbandingan antar-anak — bintang murni internal pe
 
 | Key | Isi |
 |---|---|
-| `dc:profiles` | Array semua profil anak `{id, name, avatar, birthYear, dailyLimitMinutes}` |
+| `dc:profiles` | Array semua profil anak `{id, name, avatar, birthYear, dailyLimitMinutes, tierOverride}` — `tierOverride` (`null` atau salah satu `'A'\|'B'\|'C'\|'D'`) opsional, dipakai untuk override tier hasil hitungan umur (lihat [Turun Tingkat Kalau Belum Siap](#turun-tingkat-kalau-belum-siap)) |
 | `dc:parentPin` | PIN 4-digit orang tua (plain, karena hanya kontrol kenyamanan lokal — bukan data sensitif) |
 | `dc:progress:<profileId>` | `{ totalStars, games: { [gameId]: {level, stars, setsPassedAtLevel, consecutiveSetFails, setAnswered, setCorrect, setTotalTimeMs} } }` |
 | `dc:playtime:<profileId>:<yyyy-mm-dd>` | Total detik bermain profil tsb pada tanggal tsb |

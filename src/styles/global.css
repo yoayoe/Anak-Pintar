@@ -256,11 +256,18 @@ button {
   font-size: 1.8vh;
   color: #555;
 }
-.profile-form input {
+.profile-form input,
+.profile-form select {
   font-size: 2.2vh;
   padding: 1vh;
   border-radius: 10px;
   border: 2px solid #ddd;
+  font-family: inherit;
+}
+.field-hint {
+  font-size: 1.5vh;
+  color: #888;
+  font-weight: normal;
 }
 .avatar-picker {
   display: flex;
@@ -735,4 +742,17 @@ button {
   gap: 2vw;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
   font-size: 2vh;
+}
+.placement-warning {
+  width: min(90vw, 500px);
+  background: #fff3e0;
+  border-radius: 14px;
+  padding: 2vh 3vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5vh;
+  text-align: center;
+  color: #8a5a00;
+  font-size: 1.9vh;
 }

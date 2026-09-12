@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { tierForProfile } from '../data/ageTier'
+import { useProfiles } from '../context/ProfileContext'
+import { PREV_TIER, TIER_LABELS, tierForProfile } from '../data/ageTier'
 import { stageLabel } from '../data/levelStage'
 import { applyPlacementLevels } from '../data/storage'
 import { makeRound as colorMakeRound, MAX_LEVEL as COLOR_MAX_LEVEL } from '../modules/tierA/colorMatchLogic'
@@ -143,8 +144,10 @@ function initSubjectState(subject) {
 }
 
 export default function PlacementTest({ profile, onFinish, onCancel }) {
+  const { updateProfile } = useProfiles()
   const tier = tierForProfile(profile)
   const subjects = PLACEMENT_BY_TIER[tier] || []
+  const lowerTier = PREV_TIER[tier]
 
   const [subjectIdx, setSubjectIdx] = useState(0)
   const [subjectState, setSubjectState] = useState(() => (subjects[0] ? initSubjectState(subjects[0]) : null))
@@ -191,6 +194,12 @@ export default function PlacementTest({ profile, onFinish, onCancel }) {
     onFinish(results)
   }
 
+  function tryLowerTier() {
+    updateProfile(profile.id, { tierOverride: lowerTier })
+    // PlacementTest di-remount otomatis (lihat key di App.jsx) begitu tier berubah,
+    // jadi tesnya langsung mulai dari awal untuk tingkat yang baru.
+  }
+
   if (subjects.length === 0) {
     return (
       <div className="screen placement-test">
@@ -203,6 +212,9 @@ export default function PlacementTest({ profile, onFinish, onCancel }) {
   }
 
   if (done) {
+    const strugglingBadly = subjects.length > 0 && subjects.every((s) => results[s.gameId] <= s.minLevel)
+    const canGoLower = strugglingBadly && lowerTier
+
     return (
       <div className="screen placement-test">
         <h2>Hasil Tes Penempatan</h2>
@@ -216,6 +228,17 @@ export default function PlacementTest({ profile, onFinish, onCancel }) {
             </div>
           ))}
         </div>
+        {canGoLower && (
+          <div className="placement-warning">
+            <p>
+              Sepertinya soal di {TIER_LABELS[tier]} masih agak sulit buat sekarang. Mau coba tingkat{' '}
+              {TIER_LABELS[lowerTier]} dulu? Bisa dinaikkan lagi kapan saja lewat Pengaturan Orang Tua.
+            </p>
+            <button className="btn-primary" onClick={tryLowerTier}>
+              Coba Tingkat {TIER_LABELS[lowerTier]}
+            </button>
+          </div>
+        )}
         <div className="modal-actions">
           <button className="btn-secondary" onClick={onCancel}>
             Batal
