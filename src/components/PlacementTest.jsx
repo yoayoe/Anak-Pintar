@@ -214,6 +214,7 @@ export default function PlacementTest({ profile, onFinish, onCancel }) {
   if (done) {
     const strugglingBadly = subjects.length > 0 && subjects.every((s) => results[s.gameId] <= s.minLevel)
     const canGoLower = strugglingBadly && lowerTier
+    const atFloorStruggling = strugglingBadly && !lowerTier
 
     return (
       <div className="screen placement-test">
@@ -237,6 +238,18 @@ export default function PlacementTest({ profile, onFinish, onCancel }) {
             <button className="btn-primary" onClick={tryLowerTier}>
               Coba Tingkat {TIER_LABELS[lowerTier]}
             </button>
+          </div>
+        )}
+        {atFloorStruggling && (
+          <div className="placement-warning placement-floor">
+            <p>
+              {TIER_LABELS[tier]} sudah tingkat termudah di aplikasi ini, jadi levelnya tetap di Level 1 — tidak apa-apa,
+              ini wajar dan akan membaik dengan latihan rutin.
+            </p>
+            <p>
+              Sambil ditemani orang tua, coba juga <strong>Balon Angka</strong> dan <strong>Animal Sounds</strong> —
+              main bebas tanpa dinilai, cocok buat pemanasan sebelum coba lagi.
+            </p>
           </div>
         )}
         <div className="modal-actions">
