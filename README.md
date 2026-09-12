@@ -29,6 +29,16 @@ npm run preview  # preview hasil build
 
 Tidak butuh backend/server — semua data (profil, progres, waktu main) disimpan di `localStorage` milik browser/device tersebut. PWA (`vite-plugin-pwa`) membuat app bisa di-install ke homescreen dan jalan offline.
 
+### Lewat Docker
+
+```bash
+docker build -t game-anak .
+docker run -d -p 8080:80 game-anak
+# buka http://localhost:8080
+```
+
+`Dockerfile` multi-stage: image `node:20-alpine` meng-install dependency dan `npm run build`, hasil `dist/` lalu disalin ke image `nginx:1.27-alpine` yang jauh lebih kecil untuk serving statis (`nginx.conf` menambahkan tipe MIME `.webmanifest` yang tidak ada di daftar bawaan nginx, dan mematikan cache untuk `sw.js` supaya update PWA tidak nyangkut). Sudah diverifikasi: semua aset ke-serve dengan `Content-Type` yang benar, Service Worker berhasil registrasi & aktif, dan alur penuh (buat PIN → profil → main game) berjalan normal di dalam container.
+
 ## Struktur Folder
 
 ```
