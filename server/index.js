@@ -126,6 +126,11 @@ api.get('/playtime/:profileId', (req, res) => {
   res.json({ seconds: db.getPlaytimeSeconds(req.params.profileId, req.query.date) })
 })
 
+api.get('/playtime/:profileId/history', (req, res) => {
+  const days = Math.min(31, Math.max(1, Number(req.query.days) || 7))
+  res.json(db.getPlaytimeHistory(req.params.profileId, days))
+})
+
 api.post('/playtime/:profileId', (req, res) => {
   const seconds = Number(req.body.seconds) || 0
   const total = db.addPlaytimeSeconds(req.params.profileId, seconds, req.body.date)

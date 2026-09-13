@@ -84,6 +84,10 @@ export async function loadPlaytimeSeconds(profileId, date = todayStr()) {
   return seconds
 }
 
+export function loadPlaytimeHistory(profileId, days = 7) {
+  return api(`/playtime/${profileId}/history?days=${days}`)
+}
+
 export async function addPlaytimeSeconds(profileId, seconds, date = todayStr()) {
   const res = await api(`/playtime/${profileId}`, { method: 'POST', body: JSON.stringify({ seconds, date }) })
   return res.seconds

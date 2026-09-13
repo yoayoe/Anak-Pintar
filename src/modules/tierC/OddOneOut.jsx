@@ -3,9 +3,7 @@ import { playGentle, playSuccess, speak } from '../../data/sound'
 import { useGameProgress } from '../../hooks/useGameProgress'
 import { stageLabel } from '../../data/levelStage'
 import SetReportBanner from '../../components/SetReportBanner'
-import { makeRound, EASY_PAIRINGS, MEDIUM_PAIRINGS, HARD_PAIRINGS } from '../shared/oddOneOutLogic'
-
-const MAX_LEVEL = 10
+import { makeRound, EASY_PAIRINGS, MEDIUM_PAIRINGS, HARD_PAIRINGS, MAX_LEVEL_C as MAX_LEVEL } from '../shared/oddOneOutLogic'
 
 function poolForLevel(level) {
   if (level >= 7) return HARD_PAIRINGS

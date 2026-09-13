@@ -92,6 +92,21 @@ export function getPlaytimeSeconds(profileId, date = todayStr()) {
   return db.playtime[profileId]?.[date] || 0
 }
 
+// Riwayat n hari terakhir (termasuk hari ini), urut dari yang paling lama -
+// dipakai layar monitoring orang tua. Hari tanpa data ikut dikembalikan
+// sebagai 0 supaya grafiknya tidak bolong.
+export function getPlaytimeHistory(profileId, days = 7) {
+  const perDay = db.playtime[profileId] || {}
+  const out = []
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    out.push({ date, seconds: perDay[date] || 0 })
+  }
+  return out
+}
+
 export function addPlaytimeSeconds(profileId, seconds, date = todayStr()) {
   if (!db.playtime[profileId]) db.playtime[profileId] = {}
   const next = (db.playtime[profileId][date] || 0) + seconds

@@ -246,6 +246,12 @@ button {
   color: #999;
   font-size: 1.5vh;
 }
+/* display:contents = tombolnya tetap jadi anak langsung flex baris profil di
+   layar lebar; di HP (lihat media query paling bawah) grup ini jadi baris
+   sendiri supaya ketiganya tidak menggencet kolom info. */
+.settings-row-actions {
+  display: contents;
+}
 .profile-form {
   width: min(90vw, 420px);
   background: #fff;
@@ -291,6 +297,146 @@ button {
 }
 .avatar-choice.selected {
   border-color: #ff6f91;
+}
+
+/* ---------- laporan progres (monitoring orang tua) ---------- */
+.report-subtitle {
+  font-size: 1.8vh;
+  color: #666;
+}
+.report-heading {
+  font-size: 2.2vh;
+  color: #ff6f91;
+  margin-top: 1vh;
+}
+.report-chart {
+  width: min(90vw, 600px);
+  background: #fff;
+  border-radius: 16px;
+  padding: 3vh 3vw 1.5vh;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
+}
+.report-chart-body {
+  position: relative;
+  height: 18vh;
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5vw;
+}
+.report-bar-col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.report-bar {
+  position: relative;
+  width: 100%;
+  min-height: 3px;
+  background: #7ec8e3;
+  border-radius: 8px 8px 0 0;
+}
+.report-bar.full {
+  background: #ff6f91;
+}
+.report-bar-value {
+  position: absolute;
+  top: -2.2vh;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 1.4vh;
+  color: #777;
+}
+.report-chart-limit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 2px dashed #ffb703;
+}
+.report-chart-limit span {
+  position: absolute;
+  right: 0;
+  top: -1.9vh;
+  font-size: 1.3vh;
+  color: #e09000;
+  /* Bar yang tingginya mendekati batas menaruh label menitnya di sekitar sini
+     juga - latar putih menjaga keduanya tetap terbaca saat bertumpuk. */
+  background: #fff;
+  padding: 0 0.5vw;
+}
+.report-chart-days {
+  display: flex;
+  gap: 1.5vw;
+  margin-top: 0.8vh;
+}
+.report-chart-days span {
+  flex: 1;
+  text-align: center;
+  font-size: 1.5vh;
+  color: #999;
+}
+.report-summary {
+  width: min(90vw, 600px);
+  font-size: 1.7vh;
+  color: #666;
+  text-align: center;
+}
+.report-games {
+  width: min(90vw, 600px);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vh;
+}
+.report-game {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5vh 2vw;
+  display: flex;
+  align-items: flex-start;
+  gap: 2vw;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
+}
+.report-game.unplayed {
+  opacity: 0.55;
+}
+.report-game-emoji {
+  font-size: 3.5vh;
+}
+.report-game-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4vh;
+  font-size: 1.8vh;
+  color: #555;
+}
+.report-game-sub {
+  color: #999;
+  font-size: 1.5vh;
+}
+.report-tag {
+  background: #eee;
+  color: #777;
+  border-radius: 8px;
+  padding: 0.2vh 1vw;
+  font-size: 1.3vh;
+  font-weight: normal;
+}
+.report-level-bar {
+  height: 1.2vh;
+  background: #eee;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.report-level-fill {
+  height: 100%;
+  background: #ffd166;
+  border-radius: 6px;
+}
+.report-warning {
+  font-size: 1.5vh;
+  color: #e07b00;
 }
 
 /* ---------- game shell ---------- */
@@ -780,5 +926,21 @@ button {
     top: 8vh;
     right: 2vh;
     font-size: 2.4vh;
+  }
+
+  /* Tiap baris profil punya 3 tombol aksi (Progres/Ubah/Hapus) - di lebar HP
+     tidak muat sebaris dengan avatar + info, jadi tombolnya turun ke baris
+     sendiri dan berbagi lebar rata. */
+  .settings-row {
+    flex-wrap: wrap;
+    gap: 1vh 2vw;
+  }
+  .settings-row-actions {
+    display: flex;
+    flex-basis: 100%;
+    gap: 2vw;
+  }
+  .settings-row-actions button {
+    flex: 1;
   }
 }

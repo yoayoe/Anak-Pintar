@@ -2,9 +2,7 @@ import { useRef, useState } from 'react'
 import { playGentle, playSuccess, speak } from '../../data/sound'
 import { useGameProgress } from '../../hooks/useGameProgress'
 import SetReportBanner from '../../components/SetReportBanner'
-import { makeRound, EASY_PAIRINGS, MEDIUM_PAIRINGS } from '../shared/oddOneOutLogic'
-
-const MAX_LEVEL = 8
+import { makeRound, EASY_PAIRINGS, MEDIUM_PAIRINGS, MAX_LEVEL_B as MAX_LEVEL } from '../shared/oddOneOutLogic'
 
 function poolForLevel(level) {
   return level >= 5 ? MEDIUM_PAIRINGS : EASY_PAIRINGS

@@ -1,5 +1,12 @@
 // Bank kategori besar dipakai bersama oleh game "Cari yang Beda" Tier B dan Tier C.
 // Tiap kategori punya 10 anggota supaya kombinasi soal (3 anggota acak + 1 pengecoh) sangat bervariasi.
+
+// Kedua tier pakai bank soal yang sama tapi batas levelnya beda (Tier C masuk
+// sampai HARD_PAIRINGS), jadi angkanya tinggal di sini - dibaca komponen game,
+// tes penempatan, dan laporan progres orang tua.
+export const MAX_LEVEL_B = 8
+export const MAX_LEVEL_C = 10
+
 export const CATEGORIES = {
   fruits: ['🍎', '🍌', '🍊', '🍇', '🍓', '🍍', '🥭', '🍑', '🍒', '🥝'],
   vegetables: ['🥕', '🥦', '🌽', '🥔', '🍅', '🥒', '🧅', '🍆', '🥬', '🫑'],

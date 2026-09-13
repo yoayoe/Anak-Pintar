@@ -13,13 +13,13 @@ import {
   EASY_PAIRINGS,
   MEDIUM_PAIRINGS,
   HARD_PAIRINGS,
+  MAX_LEVEL_B as ODD_ONE_OUT_B_MAX_LEVEL,
+  MAX_LEVEL_C as ODD_ONE_OUT_C_MAX_LEVEL,
 } from '../modules/shared/oddOneOutLogic'
 import { makeQuestion as multMakeQuestion, MAX_LEVEL as MULT_MAX_LEVEL } from '../modules/tierD/multiplicationLogic'
 import { makeRound as patternMakeRound, MAX_LEVEL as PATTERN_MAX_LEVEL } from '../modules/tierD/patternSequenceLogic'
 import { makeRound as synonymMakeRound, MAX_LEVEL as SYNONYM_MAX_LEVEL } from '../modules/tierD/synonymMatchLogic'
 
-const ODD_ONE_OUT_B_MAX_LEVEL = 8
-const ODD_ONE_OUT_C_MAX_LEVEL = 10
 
 function oddOneOutPoolB(level) {
   return level >= 5 ? MEDIUM_PAIRINGS : EASY_PAIRINGS

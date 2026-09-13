@@ -13,9 +13,10 @@ Game edukasi web ringan (React + Vite + PWA) untuk melatih **logika**, **matemat
 7. [Tes Penempatan (Placement Test)](#tes-penempatan-placement-test)
 8. [Sistem Bintang & Reward](#sistem-bintang--reward)
 9. [Batas Waktu Harian](#batas-waktu-harian)
-10. [Model Data (Backend)](#model-data-backend)
-11. [Backend & Akses Internet](#backend--akses-internet)
-12. [Keterbatasan & Roadmap](#keterbatasan--roadmap)
+10. [Monitoring Progres (Laporan Orang Tua)](#monitoring-progres-laporan-orang-tua)
+11. [Model Data (Backend)](#model-data-backend)
+12. [Backend & Akses Internet](#backend--akses-internet)
+13. [Keterbatasan & Roadmap](#keterbatasan--roadmap)
 
 ---
 
@@ -61,6 +62,7 @@ src/
     useGameProgress.js      # mesin leveling/grading ala Kumon (lihat bab 5)
   components/
     LoginGate, ProfileSelect, Settings, ParentGate  # gerbang PIN seluruh app, pemilihan profil, pengaturan ortu
+    ProgressReport                          # laporan waktu main & perkembangan level per anak
     GameShell, GameMenu                    # kerangka layar bermain + menu game per tier
     PlacementTest, SetReportBanner          # tes penempatan & laporan tiap set soal
   modules/
@@ -157,7 +159,7 @@ Ditampilkan di layar sebagai contoh: `Level 4 · Menengah`. Ini kosmetik saja (t
 | Game | `setSize` | `passAccuracy` | `targetTimeMs` | `maxLevel` | `setsPerLevel` |
 |---|---|---|---|---|---|
 | Color Match (Tier A) | 8 | 75% | ∞ (tanpa syarat kecepatan) | 4 | 3 |
-| Tambah Ceria (Tier B) | 10 | 80% | 15.000 ms | 8 | 3 |
+| Tambah Ceria (Tier B) | 10 | 80% | 15.000 ms | 9 | 3 |
 | Cari yang Beda (Tier B) | 8 | 75% | ∞ (tanpa syarat kecepatan) | 8 | 3 |
 | Kata & Gambar (Tier B) | 10 | 80% | 12.000 ms | 6 | 3 |
 | Tambah & Kurang (Tier C) | 10 | 80% | 15.000 ms | 10 | 3 |
@@ -188,7 +190,7 @@ Anak main Perkalian Cepat di Level 3:
 
 ### Tambah Ceria (Tier B — Matematika, `additionLogic.js`)
 
-- Penjumlahan dua bilangan, `maxOperand = min(10, 1 + level)` → Level 1: angka 1-2 (jumlah maks 4), Level 8: angka 1-9 (jumlah bisa sampai 18) — sesuai kurikulum "penjumlahan sampai 20" TK-Kelas 1.
+- Penjumlahan dua bilangan, `maxOperand = min(10, 1 + level)` → Level 1: angka 1-2 (jumlah maks 4), Level 9: angka 1-10 (jumlah bisa sampai 20) — sesuai kurikulum "penjumlahan sampai 20" TK-Kelas 1.
 - Mulai Level 5, 40% soal berubah jadi **cari suku yang hilang** (`a + ? = c`), sama pola variasinya dengan Perkalian Cepat di Tier D.
 
 ### Cari yang Beda (Tier B & Tier C — Logika, `shared/oddOneOutLogic.js`)
@@ -297,6 +299,25 @@ Tidak ada leaderboard atau perbandingan antar-anak — bintang murni internal pe
 - Sisa waktu habis → layar dikunci (`lock-screen`), hanya bisa kembali ke pilih profil, baru bisa main lagi besok (hitungan berbasis tanggal lokal, reset otomatis saat tanggal berganti — dideteksi tiap detik lewat `todayStr()`).
 - Batas harian (30-60 menit, kelipatan 5) diatur per-profil oleh orang tua lewat gerbang PIN di halaman Pengaturan.
 
+## Monitoring Progres (Laporan Orang Tua)
+
+Di layar Pengaturan, tiap profil punya tombol **📊 Progres** yang membuka laporan per anak (`src/components/ProgressReport.jsx`). Isinya dua bagian:
+
+**1. Waktu main 7 hari terakhir** — grafik batang harian dari `GET /api/playtime/:profileId/history?days=7`. Hari tanpa data ikut dikirim server sebagai `0` supaya grafiknya tidak bolong. Garis putus-putus oranye menandai batas harian anak tsb, dan batang yang menyentuh/melewati batas diwarnai merah muda — jadi orang tua langsung lihat hari mana anaknya main sampai mentok. Di bawahnya ada ringkasan total menit, berapa hari dari 7 yang dipakai main, dan rata-rata per hari main (dibagi hari yang benar-benar main, bukan dibagi 7 — supaya angkanya tidak menyesatkan kalau anak libur beberapa hari).
+
+**2. Perkembangan per game** — dibaca dari `GET /api/progress/:profileId`, menampilkan untuk tiap game:
+
+| Yang ditampilkan | Artinya buat orang tua |
+|---|---|
+| `Level X/maxLevel · <Tahapan>` + bar | Posisi anak di kurikulum game itu (lihat [Label Tahapan](#label-tahapan)) |
+| `N/3 set lulus menuju level berikutnya` | Seberapa dekat naik level — butuh 3 set lulus berturut-turut |
+| `sedang mengerjakan set (N soal)` | Ada set yang belum selesai, jadi angka di atas belum final |
+| ⚠️ `Baru gagal 1 set` | Peringatan dini: satu kegagalan lagi dan levelnya turun (lihat [Naik & turun level](#naik--turun-level)) |
+| `Main bebas · ⭐ N` | Game tanpa grading (Balon Angka, Animal Sounds) — hanya hitung bintang |
+| `Belum pernah dimainkan` | Game di tingkatnya yang belum disentuh, ditampilkan redup |
+
+Daftar game-nya = semua game di tier anak saat ini, **ditambah** game dari tier lain yang terlanjur punya progres (misalnya setelah [turun tingkat](#turun-tingkat-kalau-belum-siap)) — ditandai label "Tingkat B/C/D" supaya riwayatnya tidak hilang dari laporan.
+
 ## Model Data (Backend)
 
 Semua data sekarang di server, bukan di browser lagi — lihat [Backend & Akses Internet](#backend--akses-internet) untuk detail lengkap. Ringkasan bentuknya (satu file `db.json`):
@@ -344,6 +365,5 @@ Lapisan ini menggantikan rekomendasi **Cloudflare Access** yang sebelumnya didok
 ## Keterbatasan & Roadmap
 
 - **Ikon PWA** (`pwa-192.png`, `pwa-512.png`) belum dibuat — install-to-homescreen akan pakai ikon default browser.
-- **Belum ada laporan mingguan untuk orang tua** (waktu main, topik yang dikuasai) — datanya sudah tersimpan di backend, tinggal dibuatkan tampilannya di layar Pengaturan.
 - **Placement test hanya sekali jalan per klik** — kalau ingin tes ulang (misalnya beberapa bulan kemudian anak makin jago), tinggal buka lagi tombolnya, tidak ada pembatasan berapa kali boleh dites.
 - **Tidak ada migrasi otomatis dari localStorage lama** — profil yang dibuat sebelum backend ini ada (di `localhost:5173`/`:8080` versi lama) tidak ikut pindah; ini keputusan sadar saat backend dibangun, bukan bug.

@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { useProfiles } from '../context/ProfileContext'
 import { ageFromBirthYear, ageTierForProfile, TIER_LABELS, TIERS, tierForProfile } from '../data/ageTier'
 import { loadPlaytimeSeconds, logout } from '../data/storage'
+import ProgressReport from './ProgressReport'
 
 const AVATARS = ['🐻', '🦊', '🐱', '🐶', '🐼', '🦁', '🐸', '🦄']
 
 export default function Settings({ onBack }) {
   const { profiles, addProfile, updateProfile, removeProfile } = useProfiles()
   const [form, setForm] = useState(null)
+  const [reportProfileId, setReportProfileId] = useState(null)
   const [playtimes, setPlaytimes] = useState({})
 
   useEffect(() => {
@@ -44,6 +46,11 @@ export default function Settings({ onBack }) {
     window.location.reload()
   }
 
+  const reportProfile = profiles.find((p) => p.id === reportProfileId)
+  if (reportProfile) {
+    return <ProgressReport profile={reportProfile} onBack={() => setReportProfileId(null)} />
+  }
+
   return (
     <div className="screen settings">
       <button className="home-btn" onClick={onBack}>🏠</button>
@@ -66,8 +73,11 @@ export default function Settings({ onBack }) {
                   )}
                   <span className="settings-row-sub">Main hari ini: {Math.round((playtimes[p.id] || 0) / 60)} menit</span>
                 </div>
-                <button className="btn-secondary" onClick={() => startEdit(p)}>Ubah</button>
-                <button className="btn-danger" onClick={() => removeProfile(p.id)}>Hapus</button>
+                <div className="settings-row-actions">
+                  <button className="btn-secondary" onClick={() => setReportProfileId(p.id)}>📊 Progres</button>
+                  <button className="btn-secondary" onClick={() => startEdit(p)}>Ubah</button>
+                  <button className="btn-danger" onClick={() => removeProfile(p.id)}>Hapus</button>
+                </div>
               </div>
             ))}
           </div>
