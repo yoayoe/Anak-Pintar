@@ -4,7 +4,7 @@ import { ageFromBirthYear, TIER_LABELS, tierForProfile } from '../data/ageTier'
 import ParentGate from './ParentGate'
 
 export default function ProfileSelect({ onPlay, onOpenSettings }) {
-  const { profiles, setActiveProfileId } = useProfiles()
+  const { profiles, loading, setActiveProfileId } = useProfiles()
   const [showGate, setShowGate] = useState(false)
 
   function play(id) {
@@ -23,7 +23,7 @@ export default function ProfileSelect({ onPlay, onOpenSettings }) {
             <span className="profile-tier">{TIER_LABELS[tierForProfile(p)]}</span>
           </button>
         ))}
-        {profiles.length === 0 && (
+        {!loading && profiles.length === 0 && (
           <p className="empty-hint">Belum ada profil. Tambahkan lewat Pengaturan Orang Tua.</p>
         )}
       </div>

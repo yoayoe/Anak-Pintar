@@ -1,35 +1,58 @@
-import { useState } from 'react'
-import { loadPin, savePin } from '../data/storage'
+import { useEffect, useState } from 'react'
+import { createPin, pinExists, verifyPin } from '../data/storage'
 
 export default function ParentGate({ onSuccess, onCancel }) {
-  const existingPin = loadPin()
-  const [step, setStep] = useState(existingPin ? 'enter' : 'create')
+  const [step, setStep] = useState(null) // null while checking, then 'create' | 'enter'
   const [pin, setPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
   const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  function handleCreate(e) {
+  useEffect(() => {
+    pinExists()
+      .then((exists) => setStep(exists ? 'enter' : 'create'))
+      .catch(() => setError('Gagal terhubung ke server'))
+  }, [])
+
+  async function handleCreate(e) {
     e.preventDefault()
     if (pin.length !== 4) return setError('PIN harus 4 digit')
     if (pin !== confirmPin) return setError('PIN tidak sama')
-    savePin(pin)
-    onSuccess()
+    setBusy(true)
+    try {
+      await createPin(pin)
+      onSuccess()
+    } catch {
+      setError('Gagal menyimpan PIN, coba lagi')
+    } finally {
+      setBusy(false)
+    }
   }
 
-  function handleEnter(e) {
+  async function handleEnter(e) {
     e.preventDefault()
-    if (pin === existingPin) {
-      onSuccess()
-    } else {
-      setError('PIN salah')
+    setBusy(true)
+    try {
+      const ok = await verifyPin(pin)
+      if (ok) {
+        onSuccess()
+      } else {
+        setError('PIN salah')
+        setPin('')
+      }
+    } catch {
+      setError('Terlalu banyak percobaan, coba lagi nanti')
       setPin('')
+    } finally {
+      setBusy(false)
     }
   }
 
   return (
     <div className="modal-overlay">
       <div className="modal-card">
-        {step === 'create' ? (
+        {step === null && <p>Memuat...</p>}
+        {step === 'create' && (
           <form onSubmit={handleCreate}>
             <h2>Buat PIN Orang Tua</h2>
             <p>PIN ini dipakai untuk mengatur profil &amp; batas waktu anak.</p>
@@ -53,10 +76,11 @@ export default function ParentGate({ onSuccess, onCancel }) {
             {error && <p className="form-error">{error}</p>}
             <div className="modal-actions">
               <button type="button" className="btn-secondary" onClick={onCancel}>Batal</button>
-              <button type="submit" className="btn-primary">Simpan</button>
+              <button type="submit" className="btn-primary" disabled={busy}>Simpan</button>
             </div>
           </form>
-        ) : (
+        )}
+        {step === 'enter' && (
           <form onSubmit={handleEnter}>
             <h2>Masuk sebagai Orang Tua</h2>
             <input
@@ -71,7 +95,7 @@ export default function ParentGate({ onSuccess, onCancel }) {
             {error && <p className="form-error">{error}</p>}
             <div className="modal-actions">
               <button type="button" className="btn-secondary" onClick={onCancel}>Batal</button>
-              <button type="submit" className="btn-primary">Masuk</button>
+              <button type="submit" className="btn-primary" disabled={busy}>Masuk</button>
             </div>
           </form>
         )}

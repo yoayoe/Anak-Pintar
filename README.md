@@ -13,38 +13,44 @@ Game edukasi web ringan (React + Vite + PWA) untuk melatih **logika**, **matemat
 7. [Tes Penempatan (Placement Test)](#tes-penempatan-placement-test)
 8. [Sistem Bintang & Reward](#sistem-bintang--reward)
 9. [Batas Waktu Harian](#batas-waktu-harian)
-10. [Model Data (localStorage)](#model-data-localstorage)
-11. [Keterbatasan & Roadmap](#keterbatasan--roadmap)
+10. [Model Data (Backend)](#model-data-backend)
+11. [Backend & Akses Internet](#backend--akses-internet)
+12. [Keterbatasan & Roadmap](#keterbatasan--roadmap)
 
 ---
 
 ## Menjalankan Project
 
+Ada backend kecil (Express) sekarang — profil/progres/waktu main disimpan di server, bukan lagi di `localStorage` browser, supaya konsisten dipakai dari banyak device. Untuk development, backend dan frontend jalan sebagai dua proses terpisah:
+
 ```bash
 npm install
-npm run dev      # development server, http://localhost:5173
+npm run server   # backend Express, http://localhost:3000 (data di ./data/db.json)
+npm run dev      # development server frontend, http://localhost:5173 (proxy /api ke port 3000)
 npm run build    # build produksi ke ./dist
-npm run preview  # preview hasil build
 ```
 
-Tidak butuh backend/server — semua data (profil, progres, waktu main) disimpan di `localStorage` milik browser/device tersebut. PWA (`vite-plugin-pwa`) membuat app bisa di-install ke homescreen dan jalan offline.
+PWA (`vite-plugin-pwa`) membuat app bisa di-install ke homescreen dan jalan offline untuk asetnya (bukan untuk data — data tetap butuh koneksi ke backend).
 
 ### Lewat Docker
 
 ```bash
 docker build -t game-anak .
-docker run -d -p 8080:80 game-anak
+docker run -d -p 8080:3000 -v game-anak-data:/data game-anak
 # buka http://localhost:8080
 ```
 
-`Dockerfile` multi-stage: image `node:20-alpine` meng-install dependency dan `npm run build`, hasil `dist/` lalu disalin ke image `nginx:1.27-alpine` yang jauh lebih kecil untuk serving statis (`nginx.conf` menambahkan tipe MIME `.webmanifest` yang tidak ada di daftar bawaan nginx, dan mematikan cache untuk `sw.js` supaya update PWA tidak nyangkut). Sudah diverifikasi: semua aset ke-serve dengan `Content-Type` yang benar, Service Worker berhasil registrasi & aktif, dan alur penuh (buat PIN → profil → main game) berjalan normal di dalam container.
+Atau pakai `docker compose up -d app` (lihat `docker-compose.yml`) yang sudah otomatis pasang volume-nya. `Dockerfile` sekarang single-stage runtime: `node:20-alpine` menjalankan `server/index.js`, yang meng-serve API (`/api/*`) **dan** file statis hasil build React sekaligus — nginx sudah tidak dipakai lagi (satu proses, satu port, lebih sederhana untuk di-tunnel ke internet). Lihat [Backend & Akses Internet](#backend--akses-internet) untuk detail data storage dan cara mengaksesnya dari luar rumah.
 
 ## Struktur Folder
 
 ```
+server/
+  index.js              # Express: routes /api/* + serve dist/ statis
+  db.js                 # datastore JSON-file (lihat bab 11)
 src/
   data/
-    storage.js          # baca/tulis localStorage: profil, progres, waktu main
+    storage.js          # client API - fetch() ke /api/*, dulunya baca/tulis localStorage langsung
     ageTier.js           # hitung tier (A/B/C/D) dari tahun lahir
     levelStage.js         # label tahapan (Pemanasan..Master) dari nomor level
     sound.js              # efek suara (Web Audio) + text-to-speech (Web Speech API)
@@ -284,25 +290,55 @@ Tidak ada leaderboard atau perbandingan antar-anak — bintang murni internal pe
 
 `src/hooks/useDailyTimer.js`, dipakai oleh `GameShell` di semua layar bermain (termasuk Tes Penempatan):
 
-- Tiap detik, kalau `document.visibilityState === 'visible'` (tab/app aktif di layar), waktu terpakai bertambah 1 detik dan disimpan ke `localStorage` (`dc:playtime:<profileId>:<yyyy-mm-dd>`).
+- Tiap detik, kalau `document.visibilityState === 'visible'` (tab/app aktif di layar), waktu terpakai bertambah 1 detik di UI **secara lokal** (responsif, tidak nunggu network).
+- Detik yang belum tersimpan dikirim ke server (`POST /api/playtime/:profileId`) tiap ~10 detik, bukan tiap detik — supaya backend yang diakses lewat internet (Cloudflare Tunnel) tidak kebanjiran 60 request/menit per anak yang lagi main. Sisa detik juga langsung dikirim saat tab disembunyikan (`visibilitychange`) atau layar berpindah, jadi paling banyak ~10 detik yang berisiko tidak ke-flush kalau koneksi putus mendadak.
 - Kalau tab di-minimize/pindah tab, hitungan **berhenti otomatis** (tidak menghukum anak untuk waktu yang tidak benar-benar dipakai main).
 - Sisa waktu ≤ 5 menit → badge waktu berubah warna (peringatan).
 - Sisa waktu habis → layar dikunci (`lock-screen`), hanya bisa kembali ke pilih profil, baru bisa main lagi besok (hitungan berbasis tanggal lokal, reset otomatis saat tanggal berganti — dideteksi tiap detik lewat `todayStr()`).
 - Batas harian (30-60 menit, kelipatan 5) diatur per-profil oleh orang tua lewat gerbang PIN di halaman Pengaturan.
 
-## Model Data (localStorage)
+## Model Data (Backend)
 
-| Key | Isi |
+Semua data sekarang di server, bukan di browser lagi — lihat [Backend & Akses Internet](#backend--akses-internet) untuk detail lengkap. Ringkasan bentuknya (satu file `db.json`):
+
+| Bagian | Isi |
 |---|---|
-| `dc:profiles` | Array semua profil anak `{id, name, avatar, birthYear, dailyLimitMinutes, tierOverride}` — `tierOverride` (`null` atau salah satu `'A'\|'B'\|'C'\|'D'`) opsional, dipakai untuk override tier hasil hitungan umur (lihat [Turun Tingkat Kalau Belum Siap](#turun-tingkat-kalau-belum-siap)) |
-| `dc:parentPin` | PIN 4-digit orang tua (plain, karena hanya kontrol kenyamanan lokal — bukan data sensitif) |
-| `dc:progress:<profileId>` | `{ totalStars, games: { [gameId]: {level, stars, setsPassedAtLevel, consecutiveSetFails, setAnswered, setCorrect, setTotalTimeMs} } }` |
-| `dc:playtime:<profileId>:<yyyy-mm-dd>` | Total detik bermain profil tsb pada tanggal tsb |
+| `parentPin` | PIN 4-digit orang tua. Tidak pernah dikirim balik ke client — verifikasi dilakukan di server (`POST /api/pin/verify`) |
+| `profiles` | Array semua profil anak `{id, name, avatar, birthYear, dailyLimitMinutes, tierOverride}` — `tierOverride` (`null` atau salah satu `'A'\|'B'\|'C'\|'D'`) opsional, dipakai untuk override tier hasil hitungan umur (lihat [Turun Tingkat Kalau Belum Siap](#turun-tingkat-kalau-belum-siap)) |
+| `progress.<profileId>` | `{ totalStars, games: { [gameId]: {level, stars, setsPassedAtLevel, consecutiveSetFails, setAnswered, setCorrect, setTotalTimeMs} } }` — sama persis bentuknya dengan versi localStorage sebelumnya |
+| `playtime.<profileId>.<yyyy-mm-dd>` | Total detik bermain profil tsb pada tanggal tsb |
 
-Semua data lokal di device — tidak ada server/akun, sehingga tidak ada login, dan data tidak tersinkron antar-device.
+## Backend & Akses Internet
+
+`server/index.js` (Express) meng-serve API di `/api/*` sekaligus file statis hasil build React — satu proses, satu port (`3000` secara default). `server/db.js` adalah datastore-nya: satu file JSON (`db.json`) di-load ke memori saat start, tiap tulis langsung disimpan lagi ke disk (tulis ke `.tmp` lalu rename, supaya tidak korup kalau proses mati di tengah tulis).
+
+**Kenapa file JSON, bukan SQL database?** Data aplikasi ini kecil (segelintir profil anak, tiap profil cuma satu blob JSON progres) dan jarang ditulis bersamaan — database SQL beneran (mis. `better-sqlite3`) cuma nambah kerumitan build Docker (native module, sering bermasalah di Alpine/musl) tanpa manfaat nyata di skala ini.
+
+**Kenapa optimistic write, bukan tunggu server tiap jawaban?** `useGameProgress`'s `recordAnswer()` dipakai game untuk langsung generate soal berikutnya (`const result = recordAnswer(...); setQuestion(makeQuestion(result.level))`) — kalau ini nunggu network, tiap jawaban akan terasa lag. Jadi state di React diupdate duluan (sinkron), baru `PUT /api/progress/:id` dikirim di belakang layar tanpa ditunggu. Kalau request itu gagal, progres di server bisa telat beberapa detik dari yang di layar — untuk game anak ini risikonya kecil dan bisa diterima.
+
+### Backup data
+
+`db.json` ada di volume Docker `/data` (nama volume `app-data` di `docker-compose.yml`). Backup = copy file itu:
+
+```bash
+docker compose cp app:/data/db.json ./backup-db.json
+```
+
+### Akses dari luar rumah (Cloudflare Tunnel)
+
+1. Login ke [dash.cloudflare.com](https://dash.cloudflare.com) → **Zero Trust** → **Networks → Tunnels** → buat tunnel baru.
+2. Set public hostname-nya mengarah ke `http://app:3000` (nama service `app` di `docker-compose.yml`, port container-nya, bukan port 8080 di host).
+3. Copy token tunnel-nya, taruh di file `.env` di folder project ini (jangan di-commit — sudah masuk `.gitignore`):
+   ```
+   TUNNEL_TOKEN=isi-token-dari-dashboard-di-sini
+   ```
+4. `docker compose up -d` — service `cloudflared` akan otomatis konek pakai token itu.
+
+**Penting — PIN 4-digit bukan pengaman yang cukup untuk internet terbuka.** PIN di app ini cuma untuk memisahkan layar "Pengaturan Orang Tua" dari layar main anak, bukan didesain menahan orang asing dari internet (10.000 kombinasi, walau sudah dibatasi 10 percobaan/15 menit di server). **Sangat disarankan** pasang **Cloudflare Access** di depan hostname tunnel-nya (Zero Trust → Access → Applications → tambah aplikasi untuk hostname ini, atur policy login pakai email keluarga) — ini gratis untuk pemakaian personal dan jadi lapisan login sungguhan sebelum request sampai ke app sama sekali. Ini pengaturan di dashboard Cloudflare, bukan sesuatu yang bisa diatur lewat kode di repo ini.
 
 ## Keterbatasan & Roadmap
 
 - **Ikon PWA** (`pwa-192.png`, `pwa-512.png`) belum dibuat — install-to-homescreen akan pakai ikon default browser.
-- **Belum ada laporan mingguan untuk orang tua** (waktu main, topik yang dikuasai) — datanya sudah tersimpan (`dc:progress:*`, `dc:playtime:*`), tinggal dibuatkan tampilannya di layar Pengaturan.
+- **Belum ada laporan mingguan untuk orang tua** (waktu main, topik yang dikuasai) — datanya sudah tersimpan di backend, tinggal dibuatkan tampilannya di layar Pengaturan.
 - **Placement test hanya sekali jalan per klik** — kalau ingin tes ulang (misalnya beberapa bulan kemudian anak makin jago), tinggal buka lagi tombolnya, tidak ada pembatasan berapa kali boleh dites.
+- **Tidak ada migrasi otomatis dari localStorage lama** — profil yang dibuat sebelum backend ini ada (di `localhost:5173`/`:8080` versi lama) tidak ikut pindah; ini keputusan sadar saat backend dibangun, bukan bug.

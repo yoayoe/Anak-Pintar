@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useProfiles } from '../context/ProfileContext'
 import { ageFromBirthYear, ageTierForProfile, TIER_LABELS, TIERS, tierForProfile } from '../data/ageTier'
 import { loadPlaytimeSeconds } from '../data/storage'
@@ -8,6 +8,17 @@ const AVATARS = ['🐻', '🦊', '🐱', '🐶', '🐼', '🦁', '🐸', '🦄']
 export default function Settings({ onBack }) {
   const { profiles, addProfile, updateProfile, removeProfile } = useProfiles()
   const [form, setForm] = useState(null)
+  const [playtimes, setPlaytimes] = useState({})
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all(profiles.map((p) => loadPlaytimeSeconds(p.id).then((seconds) => [p.id, seconds]))).then((pairs) => {
+      if (!cancelled) setPlaytimes(Object.fromEntries(pairs))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [profiles])
 
   function startNew() {
     setForm({ name: '', avatar: AVATARS[0], birthYear: new Date().getFullYear() - 5, dailyLimitMinutes: 45 })
@@ -17,13 +28,13 @@ export default function Settings({ onBack }) {
     setForm({ ...p })
   }
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault()
     if (!form.name.trim()) return
     if (form.id) {
-      updateProfile(form.id, form)
+      await updateProfile(form.id, form)
     } else {
-      addProfile(form)
+      await addProfile(form)
     }
     setForm(null)
   }
@@ -47,7 +58,7 @@ export default function Settings({ onBack }) {
                       ⚠️ Tingkat diatur manual (bukan {TIER_LABELS[ageTierForProfile(p)]} sesuai umur)
                     </span>
                   )}
-                  <span className="settings-row-sub">Main hari ini: {Math.round(loadPlaytimeSeconds(p.id) / 60)} menit</span>
+                  <span className="settings-row-sub">Main hari ini: {Math.round((playtimes[p.id] || 0) / 60)} menit</span>
                 </div>
                 <button className="btn-secondary" onClick={() => startEdit(p)}>Ubah</button>
                 <button className="btn-danger" onClick={() => removeProfile(p.id)}>Hapus</button>

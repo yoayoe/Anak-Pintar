@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { loadProgress, saveProgress } from '../data/storage'
 
 const DEFAULT_GAME_STATE = {
@@ -11,6 +11,8 @@ const DEFAULT_GAME_STATE = {
   setTotalTimeMs: 0,
 }
 
+const DEFAULT_PROGRESS = { totalStars: 0, games: {} }
+
 const DEFAULT_CONFIG = {
   minLevel: 1,
   maxLevel: 10,
@@ -22,9 +24,34 @@ const DEFAULT_CONFIG = {
 
 export function useGameProgress(profileId, gameId, config = {}) {
   const cfg = { ...DEFAULT_CONFIG, ...config }
-  const [progress, setProgress] = useState(() => loadProgress(profileId))
+  const [progress, setProgress] = useState(DEFAULT_PROGRESS)
+  const [loaded, setLoaded] = useState(false)
+  // Answers can come in fast (Kumon-style sets); keep the freshest progress in
+  // a ref too so persist() never races a stale closure from an in-flight render.
+  const progressRef = useRef(progress)
+  progressRef.current = progress
+
+  useEffect(() => {
+    let cancelled = false
+    setLoaded(false)
+    loadProgress(profileId)
+      .then((data) => {
+        if (!cancelled) setProgress(data)
+      })
+      .catch((err) => console.error('Failed to load progress:', err))
+      .finally(() => {
+        if (!cancelled) setLoaded(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [profileId])
+
   const gameState = { ...DEFAULT_GAME_STATE, ...(progress.games[gameId] || {}) }
 
+  // Optimistic write: update the in-memory/UI state immediately (so callers
+  // can synchronously read the new level right away, no network round-trip in
+  // the hot path), then sync to the server in the background.
   const persist = useCallback(
     (nextProgress) => {
       setProgress(nextProgress)
@@ -34,13 +61,14 @@ export function useGameProgress(profileId, gameId, config = {}) {
   )
 
   const awardStar = useCallback(() => {
-    const current = { ...DEFAULT_GAME_STATE, ...(progress.games[gameId] || {}) }
+    const base = progressRef.current
+    const current = { ...DEFAULT_GAME_STATE, ...(base.games[gameId] || {}) }
     const nextGameState = { ...current, stars: current.stars + 1 }
     persist({
-      totalStars: progress.totalStars + 1,
-      games: { ...progress.games, [gameId]: nextGameState },
+      totalStars: base.totalStars + 1,
+      games: { ...base.games, [gameId]: nextGameState },
     })
-  }, [progress, gameId, persist])
+  }, [gameId, persist])
 
   // Kumon-style mastery: answers accumulate into a "set" (a worksheet of N
   // questions, default 10). A set is graded as a whole on accuracy AND speed,
@@ -50,7 +78,8 @@ export function useGameProgress(profileId, gameId, config = {}) {
   // row eases it back down one notch.
   const recordAnswer = useCallback(
     (correct, elapsedMs) => {
-      const current = { ...DEFAULT_GAME_STATE, ...(progress.games[gameId] || {}) }
+      const base = progressRef.current
+      const current = { ...DEFAULT_GAME_STATE, ...(base.games[gameId] || {}) }
       let { level, stars, setsPassedAtLevel, consecutiveSetFails, setAnswered, setCorrect, setTotalTimeMs } = current
 
       if (correct) stars += 1
@@ -105,8 +134,8 @@ export function useGameProgress(profileId, gameId, config = {}) {
         setTotalTimeMs,
       }
       persist({
-        totalStars: progress.totalStars + (correct ? 1 : 0) + (setResult === 'passed' ? 3 : 0),
-        games: { ...progress.games, [gameId]: nextGameState },
+        totalStars: base.totalStars + (correct ? 1 : 0) + (setResult === 'passed' ? 3 : 0),
+        games: { ...base.games, [gameId]: nextGameState },
       })
 
       return {
@@ -123,7 +152,7 @@ export function useGameProgress(profileId, gameId, config = {}) {
         avgTimeMs: reportAvgTimeMs,
       }
     },
-    [progress, gameId, persist, cfg.setSize, cfg.setsPerLevel, cfg.passAccuracy, cfg.targetTimeMs, cfg.minLevel, cfg.maxLevel],
+    [gameId, persist, cfg.setSize, cfg.setsPerLevel, cfg.passAccuracy, cfg.targetTimeMs, cfg.minLevel, cfg.maxLevel],
   )
 
   return {
@@ -135,6 +164,7 @@ export function useGameProgress(profileId, gameId, config = {}) {
     setsPassedAtLevel: gameState.setsPassedAtLevel,
     setsPerLevel: cfg.setsPerLevel,
     maxLevel: cfg.maxLevel,
+    loaded,
     awardStar,
     recordAnswer,
   }

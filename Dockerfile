@@ -8,10 +8,19 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# --- Stage 2: serve the built files with nginx ---
-FROM nginx:1.27-alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+# --- Stage 2: run the Express server (serves the API + the built frontend) ---
+FROM node:20-alpine
+WORKDIR /app
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+COPY server ./server
+COPY --from=build /app/dist ./dist
+
+ENV PORT=3000
+ENV DB_PATH=/data/db.json
+VOLUME /data
+
+EXPOSE 3000
+CMD ["node", "server/index.js"]

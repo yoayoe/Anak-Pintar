@@ -7,3 +7,6 @@ legacy
 .gitignore
 Dockerfile
 .dockerignore
+data
+.env
+docker-compose.yml

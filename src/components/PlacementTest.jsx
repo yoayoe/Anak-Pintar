@@ -189,8 +189,8 @@ export default function PlacementTest({ profile, onFinish, onCancel }) {
     }
   }
 
-  function applyAndFinish() {
-    applyPlacementLevels(profile.id, results)
+  async function applyAndFinish() {
+    await applyPlacementLevels(profile.id, results)
     onFinish(results)
   }
 

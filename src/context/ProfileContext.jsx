@@ -1,28 +1,33 @@
-import { createContext, useContext, useMemo, useState } from 'react'
-import { generateId, loadProfiles, saveProfiles } from '../data/storage'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createProfile, deleteProfileApi, loadProfiles, updateProfileApi } from '../data/storage'
 
 const ProfileContext = createContext(null)
 
 export function ProfileProvider({ children }) {
-  const [profiles, setProfiles] = useState(() => loadProfiles())
+  const [profiles, setProfiles] = useState([])
+  const [loading, setLoading] = useState(true)
   const [activeProfileId, setActiveProfileId] = useState(null)
 
-  function addProfile(profile) {
-    const next = [...profiles, { id: generateId(), ...profile }]
-    setProfiles(next)
-    saveProfiles(next)
+  useEffect(() => {
+    loadProfiles()
+      .then(setProfiles)
+      .catch((err) => console.error('Failed to load profiles:', err))
+      .finally(() => setLoading(false))
+  }, [])
+
+  async function addProfile(profile) {
+    const created = await createProfile(profile)
+    setProfiles((prev) => [...prev, created])
   }
 
-  function updateProfile(id, patch) {
-    const next = profiles.map((p) => (p.id === id ? { ...p, ...patch } : p))
-    setProfiles(next)
-    saveProfiles(next)
+  async function updateProfile(id, patch) {
+    const updated = await updateProfileApi(id, patch)
+    setProfiles((prev) => prev.map((p) => (p.id === id ? updated : p)))
   }
 
-  function removeProfile(id) {
-    const next = profiles.filter((p) => p.id !== id)
-    setProfiles(next)
-    saveProfiles(next)
+  async function removeProfile(id) {
+    await deleteProfileApi(id)
+    setProfiles((prev) => prev.filter((p) => p.id !== id))
     if (activeProfileId === id) setActiveProfileId(null)
   }
 
@@ -33,6 +38,7 @@ export function ProfileProvider({ children }) {
 
   const value = {
     profiles,
+    loading,
     activeProfile,
     setActiveProfileId,
     addProfile,
