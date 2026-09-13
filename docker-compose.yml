@@ -3,25 +3,12 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      # Only needed for LAN access / local testing. Once the Cloudflare Tunnel
-      # is working you can remove this if you don't want it reachable on the
-      # LAN without going through the tunnel too.
+      # Cloudflare Tunnel (set up manually outside this compose file) points
+      # at this port. Keep it bound to localhost unless you also want it
+      # reachable directly on the LAN without going through the tunnel.
       - '8080:3000'
     volumes:
       - app-data:/data
-
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    restart: unless-stopped
-    command: tunnel run
-    environment:
-      # Create the tunnel yourself in the Cloudflare Zero Trust dashboard
-      # (Networks > Tunnels), point its public hostname at http://app:3000,
-      # then paste the token here (put it in a .env file next to this
-      # file - do not commit it).
-      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
-    depends_on:
-      - app
 
 volumes:
   app-data:

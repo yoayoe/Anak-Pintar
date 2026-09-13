@@ -51,6 +51,13 @@ button {
   transform: scale(0.9);
 }
 
+.logout-btn {
+  position: absolute;
+  top: 2vh;
+  right: 2vh;
+  z-index: 50;
+}
+
 .star-bar {
   position: absolute;
   top: 2vh;

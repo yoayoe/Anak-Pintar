@@ -4,5 +4,5 @@ dist-ssr
 *.local
 .DS_Store
 .claude
-data
+/data
 .env

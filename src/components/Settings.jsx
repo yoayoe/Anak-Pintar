@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useProfiles } from '../context/ProfileContext'
 import { ageFromBirthYear, ageTierForProfile, TIER_LABELS, TIERS, tierForProfile } from '../data/ageTier'
-import { loadPlaytimeSeconds } from '../data/storage'
+import { loadPlaytimeSeconds, logout } from '../data/storage'
 
 const AVATARS = ['🐻', '🦊', '🐱', '🐶', '🐼', '🦁', '🐸', '🦄']
 
@@ -39,9 +39,15 @@ export default function Settings({ onBack }) {
     setForm(null)
   }
 
+  async function handleLogout() {
+    await logout()
+    window.location.reload()
+  }
+
   return (
     <div className="screen settings">
       <button className="home-btn" onClick={onBack}>🏠</button>
+      <button className="btn-secondary logout-btn" onClick={handleLogout}>Keluar</button>
       <h1>Pengaturan Orang Tua</h1>
 
       {!form && (

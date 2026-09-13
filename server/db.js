@@ -1,10 +1,12 @@
+import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
 const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data', 'db.json')
 
 const EMPTY_DB = {
-  parentPin: null,
+  parentPinHash: null,
+  parentPinSalt: null,
   profiles: [],
   progress: {},
   playtime: {},
@@ -99,20 +101,33 @@ export function addPlaytimeSeconds(profileId, seconds, date = todayStr()) {
 }
 
 // ---------- parent pin ----------
+// Stored as a salted scrypt hash, never in plain text - this app is reachable
+// from the open internet via the tunnel, so db.json leaking (a bad backup, a
+// misconfigured volume) shouldn't hand over the parent PIN directly.
+
+function hashPin(pin, salt = crypto.randomBytes(16).toString('hex')) {
+  return { salt, hash: crypto.scryptSync(pin, salt, 64).toString('hex') }
+}
 
 export function pinExists() {
-  return Boolean(db.parentPin)
+  return Boolean(db.parentPinHash)
 }
 
 export function setPin(pin) {
-  if (db.parentPin) return false
-  db.parentPin = pin
+  if (db.parentPinHash) return false
+  const { salt, hash } = hashPin(pin)
+  db.parentPinSalt = salt
+  db.parentPinHash = hash
   save()
   return true
 }
 
 export function verifyPin(pin) {
-  return Boolean(db.parentPin) && db.parentPin === pin
+  if (!db.parentPinHash) return false
+  const { hash } = hashPin(pin, db.parentPinSalt)
+  const a = Buffer.from(hash, 'hex')
+  const b = Buffer.from(db.parentPinHash, 'hex')
+  return a.length === b.length && crypto.timingSafeEqual(a, b)
 }
 
 export { todayStr }

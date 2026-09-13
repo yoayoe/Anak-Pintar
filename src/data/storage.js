@@ -7,6 +7,12 @@ async function api(path, options) {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   })
+  if (res.status === 401) {
+    // Session expired/invalid (e.g. server restarted) mid-use - reload so
+    // LoginGate re-checks and shows the PIN screen again.
+    window.location.reload()
+    throw new Error('Session expired')
+  }
   if (!res.ok) throw new Error(`API ${path} failed: ${res.status}`)
   if (res.status === 204) return null
   return res.json()
@@ -97,4 +103,15 @@ export async function createPin(pin) {
 export async function verifyPin(pin) {
   const { ok } = await api('/pin/verify', { method: 'POST', body: JSON.stringify({ pin }) })
   return ok
+}
+
+// ---------- session ----------
+
+export async function checkSession() {
+  const { authenticated } = await api('/session')
+  return authenticated
+}
+
+export async function logout() {
+  await api('/session/logout', { method: 'POST' })
 }

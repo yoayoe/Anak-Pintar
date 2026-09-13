@@ -60,7 +60,7 @@ src/
     useDailyTimer.js       # timer harian per profil + auto-lock
     useGameProgress.js      # mesin leveling/grading ala Kumon (lihat bab 5)
   components/
-    ProfileSelect, Settings, ParentGate  # pemilihan profil, pengaturan ortu (PIN)
+    LoginGate, ProfileSelect, Settings, ParentGate  # gerbang PIN seluruh app, pemilihan profil, pengaturan ortu
     GameShell, GameMenu                    # kerangka layar bermain + menu game per tier
     PlacementTest, SetReportBanner          # tes penempatan & laporan tiap set soal
   modules/
@@ -90,11 +90,11 @@ Setiap game "berjenjang" (bukan free-play) dipecah jadi dua file: `<Game>.jsx` (
 ## Alur Pemakaian
 
 ```
-Pilih Profil ──▶ Menu Game (per tier) ──┬──▶ Main Game ──▶ (dinilai per set 10 soal)
-                                        └──▶ Tes Penempatan ──▶ terapkan level awal
+Gerbang Masuk (PIN) ──▶ Pilih Profil ──▶ Menu Game (per tier) ──┬──▶ Main Game ──▶ (dinilai per set 10 soal)
+                                                                └──▶ Tes Penempatan ──▶ terapkan level awal
 ```
 
-Layar Pengaturan Orang Tua (gerbang PIN 4-digit) dipakai untuk menambah/mengubah profil anak dan mengatur batas waktu harian (30-60 menit). Semua layar bermain dibungkus `GameShell`, yang menampilkan tombol home, badge waktu tersisa, dan mengunci layar otomatis kalau waktu harian habis.
+Sebelum apa pun lain terlihat, aplikasi meminta PIN 4-digit orang tua (`LoginGate`) — sekali masuk, sesi tersimpan di cookie selama 30 hari jadi tidak perlu diketik ulang tiap buka (detail di [Keamanan masuk](#backend--akses-internet)). Layar Pengaturan Orang Tua (gerbang PIN yang sama, lewat `ParentGate`) dipakai untuk menambah/mengubah profil anak dan mengatur batas waktu harian (30-60 menit), plus tombol Keluar untuk device yang dipakai bersama. Semua layar bermain dibungkus `GameShell`, yang menampilkan tombol home, badge waktu tersisa, dan mengunci layar otomatis kalau waktu harian habis.
 
 ## Tier Umur
 
@@ -303,7 +303,7 @@ Semua data sekarang di server, bukan di browser lagi — lihat [Backend & Akses 
 
 | Bagian | Isi |
 |---|---|
-| `parentPin` | PIN 4-digit orang tua. Tidak pernah dikirim balik ke client — verifikasi dilakukan di server (`POST /api/pin/verify`) |
+| `parentPinHash`, `parentPinSalt` | Hash scrypt (bergaram) dari PIN 4-digit orang tua — PIN aslinya sendiri tidak pernah disimpan maupun dikirim balik ke client, verifikasi dilakukan di server (`POST /api/pin/verify`) |
 | `profiles` | Array semua profil anak `{id, name, avatar, birthYear, dailyLimitMinutes, tierOverride}` — `tierOverride` (`null` atau salah satu `'A'\|'B'\|'C'\|'D'`) opsional, dipakai untuk override tier hasil hitungan umur (lihat [Turun Tingkat Kalau Belum Siap](#turun-tingkat-kalau-belum-siap)) |
 | `progress.<profileId>` | `{ totalStars, games: { [gameId]: {level, stars, setsPassedAtLevel, consecutiveSetFails, setAnswered, setCorrect, setTotalTimeMs} } }` — sama persis bentuknya dengan versi localStorage sebelumnya |
 | `playtime.<profileId>.<yyyy-mm-dd>` | Total detik bermain profil tsb pada tanggal tsb |
@@ -326,15 +326,20 @@ docker compose cp app:/data/db.json ./backup-db.json
 
 ### Akses dari luar rumah (Cloudflare Tunnel)
 
-1. Login ke [dash.cloudflare.com](https://dash.cloudflare.com) → **Zero Trust** → **Networks → Tunnels** → buat tunnel baru.
-2. Set public hostname-nya mengarah ke `http://app:3000` (nama service `app` di `docker-compose.yml`, port container-nya, bukan port 8080 di host).
-3. Copy token tunnel-nya, taruh di file `.env` di folder project ini (jangan di-commit — sudah masuk `.gitignore`):
-   ```
-   TUNNEL_TOKEN=isi-token-dari-dashboard-di-sini
-   ```
-4. `docker compose up -d` — service `cloudflared` akan otomatis konek pakai token itu.
+Tunnel-nya di-setup manual di luar `docker-compose.yml` ini (bukan lewat `cloudflared` sebagai service compose) — arahkan public hostname-nya ke `http://<ip-host>:8080` (atau ke `app:3000` kalau `cloudflared`-nya dijalankan dalam network Docker yang sama).
 
-**Penting — PIN 4-digit bukan pengaman yang cukup untuk internet terbuka.** PIN di app ini cuma untuk memisahkan layar "Pengaturan Orang Tua" dari layar main anak, bukan didesain menahan orang asing dari internet (10.000 kombinasi, walau sudah dibatasi 10 percobaan/15 menit di server). **Sangat disarankan** pasang **Cloudflare Access** di depan hostname tunnel-nya (Zero Trust → Access → Applications → tambah aplikasi untuk hostname ini, atur policy login pakai email keluarga) — ini gratis untuk pemakaian personal dan jadi lapisan login sungguhan sebelum request sampai ke app sama sekali. Ini pengaturan di dashboard Cloudflare, bukan sesuatu yang bisa diatur lewat kode di repo ini.
+### Keamanan masuk (login gate)
+
+**Seluruh aplikasi sekarang di belakang PIN orang tua**, bukan cuma layar "Pengaturan" — begitu buka situsnya, wajib masukkan PIN 4-digit dulu sebelum profil anak atau data apa pun bisa diakses (`server/index.js`: semua route `/api/*` kecuali `/api/pin*` dan `/api/session` butuh `requireAuth`). Alurnya:
+
+- PIN diverifikasi di server dan **disimpan sebagai hash scrypt bergaram**, bukan teks polos, di `db.json` (`server/db.js`) — kalau file backup-nya bocor, PIN aslinya tidak langsung ketahuan.
+- Setelah PIN benar, server memberi **session cookie `httpOnly`** (`dc_session`, berlaku 30 hari, `SameSite=Lax`) — jadi tidak perlu login ulang tiap buka, dan cookie-nya tidak bisa dibaca lewat JavaScript di browser (mitigasi XSS). Cookie ini sengaja **tidak** ditandai `Secure` karena tunnel & akses LAN sama-sama nyambung ke server ini lewat HTTP biasa (TLS-nya berhenti di edge Cloudflare) — kalau ditandai `Secure`, browser malah akan diam-diam menolak kirim cookie-nya.
+- `POST /api/pin/verify` tetap dibatasi **10 percobaan/15 menit per IP** (`express-rate-limit`, baca IP asli dari header `CF-Connecting-IP` kalau lewat tunnel) — PIN 4-digit cuma 10.000 kombinasi, jadi pembatasan ini penting begitu reachable dari internet terbuka.
+- Ada tombol **Keluar** di layar Pengaturan (memanggil `POST /api/session/logout`) untuk device yang dipakai bersama.
+
+**Peringatan setup pertama kali:** siapa pun yang lebih dulu memanggil `POST /api/pin` (yaitu, siapa pun yang lebih dulu mengisi layar "Buat PIN Orang Tua") akan langsung tercatat sebagai PIN yang sah dan langsung login. Karena itu, **set PIN-nya dulu lewat akses LAN sebelum mengaktifkan tunnel ke internet** — server juga akan mencetak peringatan ke log kalau start tanpa PIN sama sekali. Setelah PIN pertama dibuat, `POST /api/pin` akan selalu menolak dengan `409` (tidak bisa diubah lewat endpoint ini lagi).
+
+Lapisan ini menggantikan rekomendasi **Cloudflare Access** yang sebelumnya didokumentasikan di sini. Cloudflare Access tetap boleh ditambahkan sebagai lapisan ekstra kalau mau (defense-in-depth di level edge, sebelum request sampai ke server sama sekali), tapi sekarang bukan keharusan karena app sendiri sudah punya gerbang login yang sesungguhnya.
 
 ## Keterbatasan & Roadmap
 

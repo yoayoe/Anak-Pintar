@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createPin, pinExists, verifyPin } from '../data/storage'
 
-export default function ParentGate({ onSuccess, onCancel }) {
+export default function ParentGate({ onSuccess, onCancel, allowCancel = true }) {
   const [step, setStep] = useState(null) // null while checking, then 'create' | 'enter'
   const [pin, setPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
@@ -75,7 +75,7 @@ export default function ParentGate({ onSuccess, onCancel }) {
             />
             {error && <p className="form-error">{error}</p>}
             <div className="modal-actions">
-              <button type="button" className="btn-secondary" onClick={onCancel}>Batal</button>
+              {allowCancel && <button type="button" className="btn-secondary" onClick={onCancel}>Batal</button>}
               <button type="submit" className="btn-primary" disabled={busy}>Simpan</button>
             </div>
           </form>
@@ -94,7 +94,7 @@ export default function ParentGate({ onSuccess, onCancel }) {
             />
             {error && <p className="form-error">{error}</p>}
             <div className="modal-actions">
-              <button type="button" className="btn-secondary" onClick={onCancel}>Batal</button>
+              {allowCancel && <button type="button" className="btn-secondary" onClick={onCancel}>Batal</button>}
               <button type="submit" className="btn-primary" disabled={busy}>Masuk</button>
             </div>
           </form>

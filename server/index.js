@@ -1,15 +1,19 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import cookieParser from 'cookie-parser'
 import express from 'express'
 import rateLimit from 'express-rate-limit'
 import * as db from './db.js'
+import * as sessions from './sessions.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const DIST_DIR = path.join(__dirname, '..', 'dist')
 const PORT = process.env.PORT || 3000
+const SESSION_COOKIE = 'dc_session'
 
 const app = express()
 app.use(express.json())
+app.use(cookieParser())
 
 // Cloudflare Tunnel forwards the real visitor IP via this header (not the
 // standard X-Forwarded-For chain, so Express's own `trust proxy` setting
@@ -19,7 +23,71 @@ function clientIp(req) {
   return req.headers['cf-connecting-ip'] || req.socket.remoteAddress
 }
 
+// The cookie is not marked `Secure` on purpose: the tunnel terminates TLS at
+// Cloudflare's edge and talks to this server in plain HTTP, and LAN access
+// during setup/debugging is also plain HTTP - marking it Secure would make
+// the browser silently drop it in both cases. httpOnly + SameSite=Lax is
+// still real protection against XSS cookie theft and cross-site requests.
+function setSessionCookie(res, token) {
+  res.cookie(SESSION_COOKIE, token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: sessions.SESSION_TTL_MS,
+    path: '/',
+  })
+}
+
 const api = express.Router()
+
+// ---------- session / parent pin ----------
+// The whole app sits behind this PIN now (not just the Settings screen) -
+// these routes must stay reachable without a session, everything else below
+// requireAuth does not.
+
+const pinVerifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts, try again later' },
+  keyGenerator: clientIp,
+})
+
+api.get('/session', (req, res) => {
+  res.json({ authenticated: sessions.isValidSession(req.cookies[SESSION_COOKIE]) })
+})
+
+api.post('/session/logout', (req, res) => {
+  sessions.destroySession(req.cookies[SESSION_COOKIE])
+  res.clearCookie(SESSION_COOKIE, { path: '/' })
+  res.status(204).end()
+})
+
+api.get('/pin', (req, res) => {
+  res.json({ exists: db.pinExists() })
+})
+
+api.post('/pin', (req, res) => {
+  const ok = db.setPin(String(req.body.pin || ''))
+  if (!ok) return res.status(409).json({ error: 'pin already set' })
+  // Whoever just set the PIN is trusted as the parent - log them straight in
+  // instead of asking them to immediately re-enter what they just typed.
+  setSessionCookie(res, sessions.createSession())
+  res.status(201).json({ ok: true })
+})
+
+api.post('/pin/verify', pinVerifyLimiter, (req, res) => {
+  const ok = db.verifyPin(String(req.body.pin || ''))
+  if (ok) setSessionCookie(res, sessions.createSession())
+  res.json({ ok })
+})
+
+function requireAuth(req, res, next) {
+  if (sessions.isValidSession(req.cookies[SESSION_COOKIE])) return next()
+  res.status(401).json({ error: 'unauthorized' })
+}
+
+api.use(requireAuth)
 
 // ---------- profiles ----------
 
@@ -64,33 +132,6 @@ api.post('/playtime/:profileId', (req, res) => {
   res.json({ seconds: total })
 })
 
-// ---------- parent pin ----------
-// The app is reachable from the open internet via Cloudflare Tunnel, so the
-// verify endpoint is rate-limited - a 4-digit PIN only has 10,000 combinations.
-
-const pinVerifyLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many attempts, try again later' },
-  keyGenerator: clientIp,
-})
-
-api.get('/pin', (req, res) => {
-  res.json({ exists: db.pinExists() })
-})
-
-api.post('/pin', (req, res) => {
-  const ok = db.setPin(String(req.body.pin || ''))
-  if (!ok) return res.status(409).json({ error: 'pin already set' })
-  res.status(201).json({ ok: true })
-})
-
-api.post('/pin/verify', pinVerifyLimiter, (req, res) => {
-  res.json({ ok: db.verifyPin(String(req.body.pin || '')) })
-})
-
 app.use('/api', api)
 
 // ---------- static frontend ----------
@@ -101,5 +142,11 @@ app.get('*', (req, res) => {
 })
 
 app.listen(PORT, () => {
+  if (!db.pinExists()) {
+    console.warn(
+      '[security] Belum ada PIN orang tua. Set PIN dari akses LAN dulu sebelum mengaktifkan Cloudflare Tunnel, ' +
+        'karena siapa pun yang membuat PIN pertama akan langsung masuk sebagai orang tua.',
+    )
+  }
   console.log(`Dunia Ceria server listening on port ${PORT}`)
 })

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ProfileProvider, useProfiles } from './context/ProfileContext'
 import { tierForProfile } from './data/ageTier'
+import LoginGate from './components/LoginGate'
 import ProfileSelect from './components/ProfileSelect'
 import Settings from './components/Settings'
 import GameShell from './components/GameShell'
@@ -57,8 +58,10 @@ function Router() {
 
 export default function App() {
   return (
-    <ProfileProvider>
-      <Router />
-    </ProfileProvider>
+    <LoginGate>
+      <ProfileProvider>
+        <Router />
+      </ProfileProvider>
+    </LoginGate>
   )
 }
