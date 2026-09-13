@@ -6,7 +6,7 @@ services:
       # Cloudflare Tunnel (set up manually outside this compose file) points
       # at this port. Keep it bound to localhost unless you also want it
       # reachable directly on the LAN without going through the tunnel.
-      - '8080:3000'
+      - '8081:3000'
     volumes:
       - app-data:/data
 

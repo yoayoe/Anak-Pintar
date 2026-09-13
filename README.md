@@ -326,7 +326,7 @@ docker compose cp app:/data/db.json ./backup-db.json
 
 ### Akses dari luar rumah (Cloudflare Tunnel)
 
-Tunnel-nya di-setup manual di luar `docker-compose.yml` ini (bukan lewat `cloudflared` sebagai service compose) — arahkan public hostname-nya ke `http://<ip-host>:8080` (atau ke `app:3000` kalau `cloudflared`-nya dijalankan dalam network Docker yang sama).
+Tunnel-nya di-setup manual di luar `docker-compose.yml` ini (bukan lewat `cloudflared` sebagai service compose) — arahkan public hostname-nya ke `http://<ip-host>:8081` (atau ke `app:3000` kalau `cloudflared`-nya dijalankan dalam network Docker yang sama).
 
 ### Keamanan masuk (login gate)
 
