@@ -762,3 +762,16 @@ button {
   background: #e3f2fd;
   color: #1565c0;
 }
+
+/* ---------- responsive: narrow / mobile screens ---------- */
+/* .star-bar (top-right) and .timer-badge (top-center) both sit on the same
+   row and can each grow wide (star-bar shows "Level X · Stage · Soal Y/10"),
+   so on narrow phone widths they collide/overlap. Give star-bar its own row
+   below the timer instead of fighting it for the same line. */
+@media (max-width: 600px) {
+  .star-bar {
+    top: 8vh;
+    right: 2vh;
+    font-size: 2.4vh;
+  }
+}
