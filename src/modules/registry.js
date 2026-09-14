@@ -44,3 +44,14 @@ export const GAMES = [
 export function gamesForTier(tier) {
   return GAMES.filter((g) => g.tier === tier)
 }
+
+// "Kuasai tier X" = level >= 80% dari maxLevel di semua game berjenjang (maxLevel
+// != null) tier itu. Game free-play (Balloon Pop, Animal Sounds) tidak grading,
+// jadi diabaikan. Dipakai untuk naik tier otomatis (A->B, B->C, C->D) lepas dari umur.
+const MASTERY_RATIO = 0.8
+
+export function isTierMastered(tier, games = {}) {
+  const graded = gamesForTier(tier).filter((g) => g.maxLevel != null)
+  if (graded.length === 0) return false
+  return graded.every((g) => (games[g.id]?.level || 1) >= Math.ceil(g.maxLevel * MASTERY_RATIO))
+}

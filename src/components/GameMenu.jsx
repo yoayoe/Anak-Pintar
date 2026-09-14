@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { gamesForTier } from '../modules/registry'
-import { tierForProfile, TIER_LABELS, isTierAMastered } from '../data/ageTier'
+import { gamesForTier, isTierMastered } from '../modules/registry'
+import { tierForProfile, TIER_LABELS, NEXT_TIER } from '../data/ageTier'
 import { loadProgress } from '../data/storage'
 import { useProfiles } from '../context/ProfileContext'
 
@@ -11,18 +11,20 @@ export default function GameMenu({ profile, onSelectGame, onStartPlacement }) {
   const { updateProfile } = useProfiles()
   const tier = tierForProfile(profile)
   const games = gamesForTier(tier)
-  const [justUpgraded, setJustUpgraded] = useState(false)
+  const [upgradedTo, setUpgradedTo] = useState(null)
 
-  // Tier A -> B otomatis kalau anak sudah menguasai semua game Tier A, walau
-  // umurnya belum cukup untuk Tier B - tidak menimpa pilihan manual orang tua.
+  // Naik tier otomatis (A->B, B->C, C->D) kalau anak sudah menguasai semua game
+  // berjenjang tier saat ini, walau umurnya belum cukup untuk tier berikutnya -
+  // tidak menimpa pilihan manual orang tua (tierOverride).
   useEffect(() => {
-    if (tier !== 'A' || profile.tierOverride || profile.tierUpgrade) return
+    const nextTier = NEXT_TIER[tier]
+    if (!nextTier || profile.tierOverride || profile.tierUpgrade) return
     let cancelled = false
     loadProgress(profile.id).then((progress) => {
       if (cancelled) return
-      if (isTierAMastered(progress.games)) {
-        updateProfile(profile.id, { tierUpgrade: 'B' })
-        setJustUpgraded(true)
+      if (isTierMastered(tier, progress.games)) {
+        updateProfile(profile.id, { tierUpgrade: nextTier })
+        setUpgradedTo(nextTier)
       }
     })
     return () => {
@@ -35,8 +37,8 @@ export default function GameMenu({ profile, onSelectGame, onStartPlacement }) {
       <h2>
         Halo, {profile.name}! {TIER_LABELS[tier]}
       </h2>
-      {justUpgraded && (
-        <p className="empty-hint">🎉 Hebat! {profile.name} sudah menguasai semua materi dasar dan naik ke {TIER_LABELS.B}!</p>
+      {upgradedTo && (
+        <p className="empty-hint">🎉 Hebat! {profile.name} sudah menguasai semua materi dan naik ke {TIER_LABELS[upgradedTo]}!</p>
       )}
       {games.length === 0 ? (
         <p className="empty-hint">Game untuk tingkat ini sedang disiapkan. Segera hadir!</p>

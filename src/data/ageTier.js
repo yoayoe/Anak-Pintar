@@ -22,6 +22,10 @@ export function tierFromAge(age) {
 // tingkat sesuai umurnya (lihat PlacementTest). Tier A tidak punya tingkat di bawahnya.
 export const PREV_TIER = { B: 'A', C: 'B', D: 'C' }
 
+// Tingkat satu tangga di atas - dipakai saat anak sudah menguasai tingkat saat ini
+// dan bisa naik walau umurnya belum cukup (lihat isTierMastered di modules/registry.js).
+export const NEXT_TIER = { A: 'B', B: 'C', C: 'D' }
+
 // Tingkat murni dari umur, mengabaikan tierOverride - dipakai untuk menampilkan
 // "harusnya di tingkat X" walau anak sedang main di tingkat yang diturunkan.
 export function ageTierForProfile(profile) {
@@ -33,17 +37,4 @@ export function ageTierForProfile(profile) {
 // hanya dipakai kalau orang tua belum mengatur tierOverride manual.
 export function tierForProfile(profile) {
   return profile.tierOverride || profile.tierUpgrade || ageTierForProfile(profile)
-}
-
-// Kriteria "menguasai Tier A": level cukup tinggi di semua game graded Tier A.
-const TIER_A_MASTERY = {
-  'tierA-learn-numbers': 8,  // max 10
-  'tierA-learn-letters': 8,  // max 10
-  'tierA-color-match': 3,    // max 4
-}
-
-export function isTierAMastered(games = {}) {
-  return Object.entries(TIER_A_MASTERY).every(
-    ([gameId, minLevel]) => (games[gameId]?.level || 1) >= minLevel,
-  )
 }
