@@ -1,6 +1,7 @@
 import BalloonPop from './tierA/BalloonPop'
 import AnimalSounds from './tierA/AnimalSounds'
 import ColorMatch from './tierA/ColorMatch'
+import NumbersLetters from './tierA/NumbersLetters'
 import AdditionB from './tierB/AdditionB'
 import OddOneOutB from './tierB/OddOneOut'
 import WordPictureMatch from './tierB/WordPictureMatch'
@@ -11,6 +12,7 @@ import Multiplication from './tierD/Multiplication'
 import PatternSequence from './tierD/PatternSequence'
 import SynonymMatch from './tierD/SynonymMatch'
 import { MAX_LEVEL as COLOR_MATCH_MAX } from './tierA/colorMatchLogic'
+import { MAX_LEVEL as NUMBERS_LETTERS_MAX } from './tierA/numbersLettersLogic'
 import { MAX_LEVEL as ADDITION_MAX } from './tierB/additionLogic'
 import { MAX_LEVEL as WORD_PICTURE_MAX } from './tierB/wordPictureLogic'
 import { MAX_LEVEL as ADD_SUBTRACT_MAX } from './tierC/addSubtractLogic'
@@ -25,6 +27,7 @@ export const GAMES = [
   { id: 'tierA-balloon-pop', tier: 'A', subject: 'math', title: 'Balon Angka', emoji: '🎈', maxLevel: null, component: BalloonPop },
   { id: 'tierA-animal-sounds', tier: 'A', subject: 'english', title: 'Animal Sounds', emoji: '🐶', maxLevel: null, component: AnimalSounds },
   { id: 'tierA-color-match', tier: 'A', subject: 'logic', title: 'Color Match', emoji: '🌈', maxLevel: COLOR_MATCH_MAX, component: ColorMatch },
+  { id: 'tierA-numbers-letters', tier: 'A', subject: 'literacy', title: 'Angka & Huruf', emoji: '🔤', maxLevel: NUMBERS_LETTERS_MAX, component: NumbersLetters },
   { id: 'tierB-addition', tier: 'B', subject: 'math', title: 'Tambah Ceria', emoji: '➕', maxLevel: ADDITION_MAX, component: AdditionB },
   { id: 'tierB-odd-one-out', tier: 'B', subject: 'logic', title: 'Cari yang Beda', emoji: '🔍', maxLevel: ODD_ONE_OUT_B_MAX, component: OddOneOutB },
   { id: 'tierB-word-picture', tier: 'B', subject: 'english', title: 'Kata & Gambar', emoji: '🖼️', maxLevel: WORD_PICTURE_MAX, component: WordPictureMatch },

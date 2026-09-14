@@ -4,6 +4,7 @@ import { PREV_TIER, TIER_LABELS, tierForProfile } from '../data/ageTier'
 import { stageLabel } from '../data/levelStage'
 import { applyPlacementLevels } from '../data/storage'
 import { makeRound as colorMakeRound, MAX_LEVEL as COLOR_MAX_LEVEL } from '../modules/tierA/colorMatchLogic'
+import { makeRound as numbersLettersMakeRound, MAX_LEVEL as NUMBERS_LETTERS_MAX_LEVEL } from '../modules/tierA/numbersLettersLogic'
 import { makeQuestion as additionMakeQuestion, MAX_LEVEL as ADDITION_MAX_LEVEL } from '../modules/tierB/additionLogic'
 import { makeRound as wordPictureMakeRound, MAX_LEVEL as WORD_PICTURE_MAX_LEVEL } from '../modules/tierB/wordPictureLogic'
 import { makeQuestion as addSubtractMakeQuestion, MAX_LEVEL as ADD_SUBTRACT_MAX_LEVEL } from '../modules/tierC/addSubtractLogic'
@@ -43,6 +44,19 @@ const PLACEMENT_BY_TIER = {
       kind: 'color',
       generate: colorMakeRound,
       isCorrect: (q, key) => key === q.target.name,
+    },
+    {
+      gameId: 'tierA-numbers-letters',
+      title: 'Angka & Huruf',
+      minLevel: 1,
+      maxLevel: NUMBERS_LETTERS_MAX_LEVEL,
+      kind: 'text',
+      generate: (level) => {
+        const r = numbersLettersMakeRound(level)
+        return { target: r.target.label, options: r.options.map((o) => o.label) }
+      },
+      getPrompt: (q) => q.target,
+      isCorrect: (q, key) => key === q.target,
     },
   ],
   B: [

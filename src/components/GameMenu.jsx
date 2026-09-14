@@ -1,8 +1,8 @@
 import { gamesForTier } from '../modules/registry'
 import { tierForProfile, TIER_LABELS } from '../data/ageTier'
 
-const SUBJECT_LABELS = { math: 'Matematika', logic: 'Logika', english: 'Bahasa Inggris' }
-const SUBJECT_COLORS = { math: 'c1', logic: 'c2', english: 'c3' }
+const SUBJECT_LABELS = { math: 'Matematika', logic: 'Logika', english: 'Bahasa Inggris', literacy: 'Baca Tulis' }
+const SUBJECT_COLORS = { math: 'c1', logic: 'c2', english: 'c3', literacy: 'c4' }
 
 export default function GameMenu({ profile, onSelectGame, onStartPlacement }) {
   const tier = tierForProfile(profile)

@@ -4,7 +4,7 @@ import { stageLabel } from '../data/levelStage'
 import { ageFromBirthYear, TIER_LABELS, tierForProfile } from '../data/ageTier'
 import { loadPlaytimeHistory, loadProgress } from '../data/storage'
 
-const SUBJECT_LABELS = { math: 'Matematika', logic: 'Logika', english: 'Bahasa Inggris' }
+const SUBJECT_LABELS = { math: 'Matematika', logic: 'Logika', english: 'Bahasa Inggris', literacy: 'Baca Tulis' }
 const DAY_LABELS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
 const SETS_PER_LEVEL = 3
 

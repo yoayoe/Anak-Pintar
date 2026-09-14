@@ -533,6 +533,9 @@ button {
 .card.c3 {
   background: #9adcff;
 }
+.card.c4 {
+  background: #c9b3ff;
+}
 .subject-tag {
   font-size: 1.5vh;
   background: rgba(255, 255, 255, 0.35);
@@ -669,7 +672,8 @@ button {
 .color-shape.square {
   border-radius: 20px;
 }
-.color-shape.wrong {
+.color-shape.wrong,
+.option-btn.wrong {
   animation: shake 0.3s;
 }
 @keyframes shake {
