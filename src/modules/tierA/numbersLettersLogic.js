@@ -9,11 +9,11 @@ const NUMBER_WORDS = ['satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', '
 export const NUMBERS = NUMBER_WORDS.map((word, i) => ({ label: String(i + 1), speech: word }))
 export const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((ch) => ({ label: ch, speech: ch }))
 
-// Nama huruf dalam Bahasa Indonesia yang lebih familiar untuk anak
+// Nama huruf sesuai abjad Bahasa Indonesia (é agar TTS baca é, bukan e pepet)
 const LETTER_NAMES = {
-  A:'A', B:'Be', C:'Ce', D:'Dé', E:'E', F:'Ef', G:'Ge', H:'Ha', I:'I',
-  J:'Je', K:'Ka', L:'El', M:'Em', N:'En', O:'O', P:'Pe', Q:'Ki', R:'Er',
-  S:'Es', T:'Te', U:'U', V:'Ve', W:'We', X:'Eks', Y:'Ye', Z:'Zet',
+  A:'A', B:'Bé', C:'Cé', D:'Dé', E:'É', F:'Éf', G:'Gé', H:'Ha', I:'I',
+  J:'Jé', K:'Ka', L:'Él', M:'Ém', N:'Én', O:'O', P:'Pé', Q:'Ki', R:'Ér',
+  S:'És', T:'Té', U:'U', V:'Vé', W:'Wé', X:'Éks', Y:'Yé', Z:'Zét',
 }
 
 function shuffled(arr) {
