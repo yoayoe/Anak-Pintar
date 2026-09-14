@@ -15,7 +15,9 @@ export default function LearnNumbers({ profileId }) {
   const [wrongLabel, setWrongLabel] = useState(null)
   const [report, setReport] = useState(null)
   const [revealed, setRevealed] = useState(false)
+  const [correctionSeconds, setCorrectionSeconds] = useState(0)
   const startRef = useRef(Date.now())
+  const correctionTimerRef = useRef(null)
 
   // Ucapkan soal saat round berganti
   useEffect(() => {
@@ -23,8 +25,21 @@ export default function LearnNumbers({ profileId }) {
   }, [round])
 
   function choose(item) {
-    if (revealed) return
+    if (revealed || correctionSeconds > 0) return
     const correct = item.label === round.target.label
+    if (!correct) {
+      clearInterval(correctionTimerRef.current)
+      setCorrectionSeconds(5)
+      correctionTimerRef.current = setInterval(() => {
+        setCorrectionSeconds((seconds) => {
+          if (seconds <= 1) {
+            clearInterval(correctionTimerRef.current)
+            return 0
+          }
+          return seconds - 1
+        })
+      }, 1000)
+    }
     const elapsed = Date.now() - startRef.current
 
     if (correct) {
@@ -42,7 +57,7 @@ export default function LearnNumbers({ profileId }) {
 
     const result = recordAnswer(correct, elapsed)
     if (result.setResult) setReport(result)
-    const delay = result.setResult ? 2600 : (correct ? 900 : 3500)
+    const delay = result.setResult ? 2600 : (correct ? 900 : 5000)
     setTimeout(() => {
       setFeedback('')
       setReport(null)
@@ -87,7 +102,7 @@ export default function LearnNumbers({ profileId }) {
         ))}
       </div>
 
-      {feedback && !report && <div className="feedback-msg show">{feedback}</div>}
+      {feedback && !report && <div className="feedback-msg show">{feedback}{correctionSeconds > 0 && <div style={{ marginTop: '1vh' }}>⏳ Soal berikutnya dalam {correctionSeconds}...</div>}</div>}
       <SetReportBanner report={report} showTiming={false} />
     </div>
   )

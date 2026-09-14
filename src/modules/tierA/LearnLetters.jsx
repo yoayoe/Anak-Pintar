@@ -15,15 +15,30 @@ export default function LearnLetters({ profileId }) {
   const [wrongLabel, setWrongLabel] = useState(null)
   const [report, setReport] = useState(null)
   const [revealed, setRevealed] = useState(false)
+  const [correctionSeconds, setCorrectionSeconds] = useState(0)
   const startRef = useRef(Date.now())
+  const correctionTimerRef = useRef(null)
 
   useEffect(() => {
     speak(`Cari huruf ${round.target.spokenName}!`)
   }, [round])
 
   function choose(item) {
-    if (revealed) return
+    if (revealed || correctionSeconds > 0) return
     const correct = item.label === round.target.label
+    if (!correct) {
+      clearInterval(correctionTimerRef.current)
+      setCorrectionSeconds(5)
+      correctionTimerRef.current = setInterval(() => {
+        setCorrectionSeconds((seconds) => {
+          if (seconds <= 1) {
+            clearInterval(correctionTimerRef.current)
+            return 0
+          }
+          return seconds - 1
+        })
+      }, 1000)
+    }
     const elapsed = Date.now() - startRef.current
     const spokenName = LETTER_NAMES[item.label] || item.label
 
@@ -97,7 +112,7 @@ export default function LearnLetters({ profileId }) {
         ))}
       </div>
 
-      {feedback && !report && <div className="feedback-msg show">{feedback}</div>}
+      {feedback && !report && <div className="feedback-msg show">{feedback}{correctionSeconds > 0 && <div style={{ marginTop: '1vh' }}>⏳ Soal berikutnya dalam {correctionSeconds}...</div>}</div>}
       <SetReportBanner report={report} showTiming={false} />
     </div>
   )
