@@ -11,7 +11,7 @@ export const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((ch) => ({ lab
 
 // Nama huruf dalam Bahasa Indonesia yang lebih familiar untuk anak
 const LETTER_NAMES = {
-  A:'A', B:'Be', C:'Ce', D:'De', E:'E', F:'Ef', G:'Ge', H:'Ha', I:'I',
+  A:'A', B:'Be', C:'Ce', D:'Dé', E:'E', F:'Ef', G:'Ge', H:'Ha', I:'I',
   J:'Je', K:'Ka', L:'El', M:'Em', N:'En', O:'O', P:'Pe', Q:'Ki', R:'Er',
   S:'Es', T:'Te', U:'U', V:'Ve', W:'We', X:'Eks', Y:'Ye', Z:'Zet',
 }
