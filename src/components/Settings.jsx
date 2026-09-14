@@ -11,6 +11,7 @@ export default function Settings({ onBack }) {
   const [form, setForm] = useState(null)
   const [reportProfileId, setReportProfileId] = useState(null)
   const [playtimes, setPlaytimes] = useState({})
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -46,7 +47,13 @@ export default function Settings({ onBack }) {
     window.location.reload()
   }
 
+  async function confirmDelete() {
+    await removeProfile(confirmDeleteId)
+    setConfirmDeleteId(null)
+  }
+
   const reportProfile = profiles.find((p) => p.id === reportProfileId)
+  const deleteProfile = profiles.find((p) => p.id === confirmDeleteId)
   if (reportProfile) {
     return <ProgressReport profile={reportProfile} onBack={() => setReportProfileId(null)} />
   }
@@ -76,7 +83,7 @@ export default function Settings({ onBack }) {
                 <div className="settings-row-actions">
                   <button className="btn-secondary" onClick={() => setReportProfileId(p.id)}>📊 Progres</button>
                   <button className="btn-secondary" onClick={() => startEdit(p)}>Ubah</button>
-                  <button className="btn-danger" onClick={() => removeProfile(p.id)}>Hapus</button>
+                  <button className="btn-danger" onClick={() => setConfirmDeleteId(p.id)}>Hapus</button>
                 </div>
               </div>
             ))}
@@ -148,6 +155,22 @@ export default function Settings({ onBack }) {
             <button type="submit" className="btn-primary">Simpan</button>
           </div>
         </form>
+      )}
+
+      {deleteProfile && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <h2>Hapus Profil?</h2>
+            <p>
+              Profil <strong>{deleteProfile.name}</strong> beserta semua progres belajarnya akan dihapus permanen.
+              Yakin ingin melanjutkan?
+            </p>
+            <div className="modal-actions">
+              <button type="button" className="btn-secondary" onClick={() => setConfirmDeleteId(null)}>Batal</button>
+              <button type="button" className="btn-danger" onClick={confirmDelete}>Hapus</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
