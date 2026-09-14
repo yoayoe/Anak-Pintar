@@ -57,7 +57,7 @@ export default function LearnNumbers({ profileId }) {
 
     const result = recordAnswer(correct, elapsed)
     if (result.setResult) setReport(result)
-    const delay = result.setResult ? 2600 : (correct ? 900 : 5000)
+    const delay = result.setResult ? (correct ? 2600 : 5000) : (correct ? 900 : 5000)
     setTimeout(() => {
       setFeedback('')
       setReport(null)
