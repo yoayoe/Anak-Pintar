@@ -78,6 +78,11 @@ export default function Settings({ onBack }) {
                       ⚠️ Tingkat diatur manual (bukan {TIER_LABELS[ageTierForProfile(p)]} sesuai umur)
                     </span>
                   )}
+                  {!p.tierOverride && p.tierUpgrade && p.tierUpgrade !== ageTierForProfile(p) && (
+                    <span className="settings-row-sub">
+                      🌟 Naik tingkat otomatis karena sudah menguasai {TIER_LABELS[ageTierForProfile(p)]}
+                    </span>
+                  )}
                   <span className="settings-row-sub">Main hari ini: {Math.round((playtimes[p.id] || 0) / 60)} menit</span>
                 </div>
                 <div className="settings-row-actions">

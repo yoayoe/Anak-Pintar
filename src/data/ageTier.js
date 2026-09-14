@@ -28,8 +28,22 @@ export function ageTierForProfile(profile) {
   return tierFromAge(ageFromBirthYear(profile.birthYear))
 }
 
-// tierOverride (diisi manual oleh orang tua, atau otomatis lewat Tes Penempatan saat
-// anak kesulitan di semua subjek tingkat umurnya) menang atas tingkat berbasis umur.
+// tierOverride (diisi manual oleh orang tua) selalu menang — itu keputusan sadar orang tua.
+// tierUpgrade: naik tier otomatis karena menguasai semua game tier bawahnya (umur belum cukup),
+// hanya dipakai kalau orang tua belum mengatur tierOverride manual.
 export function tierForProfile(profile) {
-  return profile.tierOverride || ageTierForProfile(profile)
+  return profile.tierOverride || profile.tierUpgrade || ageTierForProfile(profile)
+}
+
+// Kriteria "menguasai Tier A": level cukup tinggi di semua game graded Tier A.
+const TIER_A_MASTERY = {
+  'tierA-learn-numbers': 8,  // max 10
+  'tierA-learn-letters': 8,  // max 10
+  'tierA-color-match': 3,    // max 4
+}
+
+export function isTierAMastered(games = {}) {
+  return Object.entries(TIER_A_MASTERY).every(
+    ([gameId, minLevel]) => (games[gameId]?.level || 1) >= minLevel,
+  )
 }
