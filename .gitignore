@@ -6,3 +6,4 @@ dist-ssr
 .claude
 /data
 .env
+CLAUDE.md
