@@ -63,7 +63,12 @@ export function speak(text, lang = 'id-ID', rate = 0.9, pitch = 1.15) {
     if (voice) u.voice = voice
     u.rate = rate
     u.pitch = pitch
-    speechSynthesis.cancel()
+    // PENTING untuk Safari iOS: speak() harus dipanggil SYNCHRONOUS di dalam
+    // gesture pengguna (tap/klik), tanpa setTimeout/Promise di antaranya -
+    // kalau tidak, Safari mendiamkannya total tanpa error. cancel() hanya
+    // dipanggil kalau memang sedang bicara, supaya tidak membatalkan
+    // utterance yang baru saja di-queue oleh tap ini sendiri.
+    if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel()
     speechSynthesis.speak(u)
   } catch {
     // speech not available, ignore
