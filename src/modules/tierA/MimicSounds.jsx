@@ -142,9 +142,9 @@ export default function MimicSounds({ profileId }) {
 
       {stage === STAGE.PLAYBACK && audioUrl && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2vh', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '2vw' }}>
-            <button className="btn-secondary" onClick={replayPrompt}>🔊 Suara Aku (App)</button>
-            <audio src={audioUrl} controls autoPlay style={{ height: '5vh' }} />
+          <div style={{ display: 'flex', gap: '2vw', alignItems: 'center' }}>
+            <button className="btn-secondary" onClick={replayPrompt}>🔊 Dengar Contoh</button>
+            <audio src={audioUrl} controls style={{ height: '5vh' }} />
           </div>
           <div style={{ display: 'flex', gap: '2vw' }}>
             <button className="btn-secondary" onClick={startRecording}>🔄 Ulangi Rekam</button>

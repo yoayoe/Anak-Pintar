@@ -725,6 +725,16 @@ button {
   gap: 4vh;
   background: linear-gradient(180deg, #fff3e0 0%, #e1f5fe 100%);
 }
+.mimic-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3vh;
+  padding: 10vh 4vw 4vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #fff3e0 0%, #e1f5fe 100%);
+}
 .question-box {
   font-size: 5vh;
   font-weight: bold;
