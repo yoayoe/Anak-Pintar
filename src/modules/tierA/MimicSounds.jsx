@@ -31,8 +31,14 @@ function shuffled(arr) {
   return [...arr].sort(() => Math.random() - 0.5)
 }
 
-// Tahapan rekam-putar: idle -> app mengucapkan -> anak menekan rekam -> selesai rekam -> putar ulang
 const STAGE = { IDLE: 'idle', RECORDING: 'recording', PLAYBACK: 'playback' }
+
+// Safari (iOS/macOS) tidak mendukung 'audio/webm' - coba beberapa format dan
+// pakai yang pertama didukung, atau biarkan browser pilih default (string kosong).
+function pickMimeType() {
+  const candidates = ['audio/webm', 'audio/mp4', 'audio/ogg', '']
+  return candidates.find((t) => t === '' || MediaRecorder.isTypeSupported(t)) || ''
+}
 
 export default function MimicSounds({ profileId }) {
   const { stars, awardStar } = useGameProgress(profileId, 'tierA-mimic-sounds')
@@ -48,11 +54,10 @@ export default function MimicSounds({ profileId }) {
   const current = queue[index]
 
   useEffect(() => {
-    if (!current) return
-    const prompt = current.kind === 'letter' ? `Huruf ${current.speech}` : `Angka ${current.speech}`
-    speak(prompt)
+    // Tidak auto-speak di sini: banyak browser mobile (Safari/Chrome) memblokir
+    // speechSynthesis kalau tidak dipicu langsung oleh tap pengguna. Anak/ortu
+    // tekan tombol "🔊 Dengar" sendiri untuk memutar instruksi.
     return () => {
-      // hentikan rekaman/stream kalau kartu berganti sebelum selesai
       mediaRecorderRef.current?.state === 'recording' && mediaRecorderRef.current.stop()
       streamRef.current?.getTracks().forEach((t) => t.stop())
     }
@@ -67,17 +72,27 @@ export default function MimicSounds({ profileId }) {
   async function startRecording() {
     setMicError('')
     setAudioUrl(null)
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setMicError('Perekaman butuh koneksi HTTPS dan browser yang mendukung mikrofon.')
+      return
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
-      const recorder = new MediaRecorder(stream)
+      const mimeType = pickMimeType()
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream)
       chunksRef.current = []
-      recorder.ondataavailable = (e) => chunksRef.current.push(e.data)
+      recorder.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data)
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+        const blob = new Blob(chunksRef.current, { type: mimeType || 'audio/webm' })
         setAudioUrl(URL.createObjectURL(blob))
         stream.getTracks().forEach((t) => t.stop())
         setStage(STAGE.PLAYBACK)
+      }
+      recorder.onerror = (e) => {
+        setMicError(`Rekaman gagal: ${e.error?.message || 'error tidak diketahui'}`)
+        stream.getTracks().forEach((t) => t.stop())
+        setStage(STAGE.IDLE)
       }
       mediaRecorderRef.current = recorder
       recorder.start()
@@ -87,7 +102,7 @@ export default function MimicSounds({ profileId }) {
         if (recorder.state === 'recording') recorder.stop()
       }, 3000)
     } catch (err) {
-      setMicError('Mikrofon tidak bisa diakses. Cek izin browser ya.')
+      setMicError(`Mikrofon tidak bisa diakses (${err.name || 'error'}). Cek izin browser ya.`)
     }
   }
 
@@ -122,8 +137,8 @@ export default function MimicSounds({ profileId }) {
 
       <button
         onClick={replayPrompt}
-        style={{ fontSize: '3vh', background: 'none', border: 'none', cursor: 'pointer' }}
-        title="Dengarkan lagi"
+        className="btn-secondary"
+        style={{ fontSize: '2.2vh', padding: '1.2vh 3vw' }}
       >🔊 Dengar</button>
 
       {micError && <div className="feedback-msg show">{micError}</div>}
