@@ -3,6 +3,7 @@ import AnimalSounds from './tierA/AnimalSounds'
 import ColorMatch from './tierA/ColorMatch'
 import LearnNumbers from './tierA/LearnNumbers'
 import LearnLetters from './tierA/LearnLetters'
+import MimicSounds from './tierA/MimicSounds'
 import AdditionB from './tierB/AdditionB'
 import OddOneOutB from './tierB/OddOneOut'
 import WordPictureMatch from './tierB/WordPictureMatch'
@@ -30,6 +31,7 @@ export const GAMES = [
   { id: 'tierA-color-match',    tier: 'A', subject: 'logic',    title: 'Color Match',    emoji: '🌈', maxLevel: COLOR_MATCH_MAX,   component: ColorMatch },
   { id: 'tierA-learn-numbers',  tier: 'A', subject: 'math',     title: 'Belajar Angka',  emoji: '🔢', maxLevel: MAX_LEVEL_NUMBERS, component: LearnNumbers },
   { id: 'tierA-learn-letters',  tier: 'A', subject: 'literacy', title: 'Belajar Huruf',  emoji: '🔡', maxLevel: MAX_LEVEL_LETTERS, component: LearnLetters },
+  { id: 'tierA-mimic-sounds',   tier: 'A', subject: 'literacy', title: 'Tirukan Aku',    emoji: '🎙️', maxLevel: null,             component: MimicSounds },
   { id: 'tierB-addition',       tier: 'B', subject: 'math',     title: 'Tambah Ceria',   emoji: '➕', maxLevel: ADDITION_MAX,      component: AdditionB },
   { id: 'tierB-odd-one-out',    tier: 'B', subject: 'logic',    title: 'Cari yang Beda', emoji: '🔍', maxLevel: ODD_ONE_OUT_B_MAX, component: OddOneOutB },
   { id: 'tierB-word-picture',   tier: 'B', subject: 'english',  title: 'Kata & Gambar',  emoji: '🖼️', maxLevel: WORD_PICTURE_MAX,  component: WordPictureMatch },
