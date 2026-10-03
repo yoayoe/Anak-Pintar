@@ -1,5 +1,5 @@
 # --- Stage 1: build the static Vite/React bundle ---
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -9,7 +9,7 @@ COPY . .
 RUN npm run build
 
 # --- Stage 2: run the Express server (serves the API + the built frontend) ---
-FROM node:20-alpine
+FROM node:26-alpine
 WORKDIR /app
 
 COPY package.json package-lock.json ./
