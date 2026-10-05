@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useProfiles } from '../context/ProfileContext'
 import { ageFromBirthYear, ageTierForProfile, TIER_LABELS, TIERS, tierForProfile } from '../data/ageTier'
-import { loadPlaytimeSeconds, logout } from '../data/storage'
+import { loadPlaytimeSeconds, logout, resetProgress } from '../data/storage'
 import ProgressReport from './ProgressReport'
 
 const AVATARS = ['🐻', '🦊', '🐱', '🐶', '🐼', '🦁', '🐸', '🦄']
@@ -12,6 +12,8 @@ export default function Settings({ onBack }) {
   const [reportProfileId, setReportProfileId] = useState(null)
   const [playtimes, setPlaytimes] = useState({})
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [confirmResetId, setConfirmResetId] = useState(null)
+  const [resetError, setResetError] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -52,6 +54,21 @@ export default function Settings({ onBack }) {
     setConfirmDeleteId(null)
   }
 
+  async function confirmReset() {
+    setResetError('')
+    try {
+      await resetProgress(confirmResetId)
+      // Naik tier otomatis (tierUpgrade) ikut dicabut, kalau tidak anak yang
+      // progresnya sudah kosong tetap terkunci di tier atas. tierOverride
+      // (pilihan manual orang tua) sengaja dibiarkan.
+      await updateProfile(confirmResetId, { tierUpgrade: null })
+      setConfirmResetId(null)
+    } catch {
+      setResetError('Gagal mereset progres. Coba lagi ya.')
+    }
+  }
+
+  const resetProfile = profiles.find((p) => p.id === confirmResetId)
   const reportProfile = profiles.find((p) => p.id === reportProfileId)
   const deleteProfile = profiles.find((p) => p.id === confirmDeleteId)
   if (reportProfile) {
@@ -88,6 +105,7 @@ export default function Settings({ onBack }) {
                 <div className="settings-row-actions">
                   <button className="btn-secondary" onClick={() => setReportProfileId(p.id)}>📊 Progres</button>
                   <button className="btn-secondary" onClick={() => startEdit(p)}>Ubah</button>
+                  <button className="btn-secondary" onClick={() => { setResetError(''); setConfirmResetId(p.id) }}>🔄 Reset Progres</button>
                   <button className="btn-danger" onClick={() => setConfirmDeleteId(p.id)}>Hapus</button>
                 </div>
               </div>
@@ -160,6 +178,23 @@ export default function Settings({ onBack }) {
             <button type="submit" className="btn-primary">Simpan</button>
           </div>
         </form>
+      )}
+
+      {resetProfile && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <h2>Reset Progres?</h2>
+            <p>
+              Semua bintang dan level game milik <strong>{resetProfile.name}</strong> akan dikembalikan ke awal.
+              Profil, batas waktu, dan riwayat waktu main tidak ikut terhapus. Tindakan ini tidak bisa dibatalkan.
+            </p>
+            {resetError && <p className="report-warning">{resetError}</p>}
+            <div className="modal-actions">
+              <button type="button" className="btn-secondary" onClick={() => setConfirmResetId(null)}>Batal</button>
+              <button type="button" className="btn-danger" onClick={confirmReset}>Reset</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {deleteProfile && (

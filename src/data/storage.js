@@ -50,6 +50,12 @@ export function saveProgress(profileId, progress) {
   })
 }
 
+// Reset total: bintang & level semua game kembali ke awal. Sengaja tidak
+// menelan error (beda dgn saveProgress) supaya UI bisa kasih tahu kalau gagal.
+export function resetProgress(profileId) {
+  return api(`/progress/${profileId}`, { method: 'PUT', body: JSON.stringify({ totalStars: 0, games: {} }) })
+}
+
 // Used by the placement test to set each game's starting level directly,
 // instead of everyone starting from level 1 regardless of real skill.
 export async function applyPlacementLevels(profileId, levelsByGame) {
