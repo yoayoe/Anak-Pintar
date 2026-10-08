@@ -255,11 +255,15 @@ button {
   color: #999;
   font-size: 1.5vh;
 }
-/* display:contents = tombolnya tetap jadi anak langsung flex baris profil di
-   layar lebar; di HP (lihat media query paling bawah) grup ini jadi baris
-   sendiri supaya ketiganya tidak menggencet kolom info. */
+/* Grup tombol aksi dibungkus sendiri supaya selalu di dalam kartu (sebelumnya
+   display:contents membuat tombol Hapus keluar dari kartu). Di HP (lihat media
+   query paling bawah) grup ini jadi baris sendiri. */
 .settings-row-actions {
-  display: contents;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1vw;
+  justify-content: flex-end;
+  flex-shrink: 0;
 }
 .profile-form {
   width: min(90vw, 420px);
