@@ -218,7 +218,7 @@ button {
   color: #ff6f91;
 }
 .settings-list {
-  width: min(90vw, 600px);
+  width: min(92vw, 760px);
   display: flex;
   flex-direction: column;
   gap: 1.5vh;
@@ -229,18 +229,27 @@ button {
   padding: 1.5vh 2vw;
   display: flex;
   align-items: center;
-  gap: 2vw;
+  gap: 1.5vw;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
 }
 .profile-avatar-sm {
   font-size: 4vh;
+  flex-shrink: 0;
 }
 .settings-row-info {
   flex: 1;
+  min-width: 14ch;
   display: flex;
   flex-direction: column;
   font-size: 1.8vh;
   color: #555;
+}
+/* Tombol aksi tidak boleh turun baris / wrap teks ("Reset\nProgres") di layar
+   lebar; kolom info yang mengalah. */
+.settings-row button {
+  white-space: nowrap;
+  padding: 1.2vh 1.4vw;
+  font-size: 1.8vh;
 }
 .settings-row-sub {
   color: #999;
