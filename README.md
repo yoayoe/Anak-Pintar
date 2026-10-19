@@ -41,7 +41,7 @@ docker run -d -p 8080:3000 -v game-anak-data:/data game-anak
 # buka http://localhost:8080
 ```
 
-Atau pakai `docker compose up -d app` (lihat `docker-compose.yml`) yang sudah otomatis pasang volume-nya. `Dockerfile` sekarang single-stage runtime: `node:20-alpine` menjalankan `server/index.js`, yang meng-serve API (`/api/*`) **dan** file statis hasil build React sekaligus — nginx sudah tidak dipakai lagi (satu proses, satu port, lebih sederhana untuk di-tunnel ke internet). Lihat [Backend & Akses Internet](#backend--akses-internet) untuk detail data storage dan cara mengaksesnya dari luar rumah.
+Atau pakai `docker compose up -d app` (lihat `docker-compose.yml`) yang sudah otomatis pasang volume-nya. `Dockerfile` dua tahap (build React, lalu runtime): `node:26-alpine` menjalankan `server/index.js` sebagai user `node` (non-root), yang meng-serve API (`/api/*`) **dan** file statis hasil build React sekaligus — nginx sudah tidak dipakai lagi (satu proses, satu port, lebih sederhana untuk di-tunnel ke internet). Lihat [Backend & Akses Internet](#backend--akses-internet) untuk detail data storage dan cara mengaksesnya dari luar rumah.
 
 ## Struktur Folder
 
